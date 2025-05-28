@@ -15,11 +15,14 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Configuration pour permettre l'importation de fichiers JS */
+    "allowJs": true,
+    "checkJs": false,
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },

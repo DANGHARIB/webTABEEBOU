@@ -47,6 +47,8 @@ const DoctorSignupScreen = () => {
     setIsLoading(true);
     
     try {
+      console.log('Envoi des données d\'inscription...');
+      
       const response = await axios.post('/api/auth/register', {
         fullName: formData.fullName,
         email: formData.email,
@@ -54,10 +56,19 @@ const DoctorSignupScreen = () => {
         role: 'Doctor'
       });
       
-      localStorage.setItem('doctorToken', response.data.token);
-      localStorage.setItem('doctorData', JSON.stringify(response.data));
+      console.log('Réponse de l\'inscription:', response.data);
+      
+      // Stocker le token avec le nom standardisé 'token'
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userInfo', JSON.stringify(response.data));
       localStorage.setItem('tempUserId', response.data._id);
       localStorage.setItem('userType', 'doctor');
+      
+      console.log('Token stocké dans localStorage:', !!response.data.token);
+      
+      // Définir explicitement le header d'autorisation pour les futures requêtes
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+      
       navigate('/doctor/auth/details');
     } catch (err: unknown) {
       console.error('Signup error:', err);

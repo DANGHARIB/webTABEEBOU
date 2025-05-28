@@ -15,17 +15,23 @@ const AccountUnderReviewScreen = () => {
     try {
       setLoading(true);
       // Récupérer le token
-      const token = localStorage.getItem('doctorToken');
+      const token = localStorage.getItem('token');
       
       if (!token) {
+        console.error("Aucun token trouvé dans localStorage");
         setError("Aucune session active trouvée. Veuillez vous reconnecter.");
         setLoading(false);
+        setTimeout(() => navigate('/doctor/auth/login'), 3000);
         return;
       }
+      
+      console.log("Vérification du statut avec token présent:", !!token);
       
       const response = await axios.get('/api/doctors/verification-status', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log("Réponse du serveur:", response.data);
       
       setVerificationStatus(response.data.status);
       
@@ -40,7 +46,7 @@ const AccountUnderReviewScreen = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [navigate]);
 
   // Vérifier le statut périodiquement
   useEffect(() => {
@@ -69,9 +75,13 @@ const AccountUnderReviewScreen = () => {
     try {
       // Supprimer toutes les données stockées pour recommencer à zéro
       localStorage.removeItem('userType');
-      localStorage.removeItem('doctorToken');
-      localStorage.removeItem('doctorData');
+      localStorage.removeItem('token');
+      localStorage.removeItem('userInfo');
       localStorage.removeItem('tempUserId');
+      localStorage.removeItem('doctorProfileCompleted');
+      
+      // Supprimer aussi le header d'autorisation
+      delete axios.defaults.headers.common['Authorization'];
       
       navigate('/doctor/auth/signup');
     } catch (err) {

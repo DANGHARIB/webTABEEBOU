@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const certificationSchema = new Schema({
+  filename: String,
+  path: String,
+  originalname: String,
+  mimetype: String
+}, { _id: false });
+
 const doctorSchema = new Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -45,9 +52,17 @@ const doctorSchema = new Schema({
   dob: {
     type: Date
   },
-  certifications: { // Changed to array of strings for file paths
-    type: [String],
+  certifications: {
+    type: [certificationSchema],
     default: []
+  },
+  hasSubmittedDocuments: {
+    type: Boolean,
+    default: false
+  },
+  profileCompleted: {
+    type: Boolean,
+    default: false
   },
   specializations: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -61,6 +76,13 @@ const doctorSchema = new Schema({
   rejectionReason: {
     type: String,
     default: null
+  },
+  verifiedAt: {
+    type: Date
+  },
+  verifiedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, {
   timestamps: true

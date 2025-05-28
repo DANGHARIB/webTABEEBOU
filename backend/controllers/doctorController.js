@@ -480,4 +480,68 @@ exports.getDoctorStats = async (req, res) => {
     logger.error(`Erreur lors de la récupération des statistiques du médecin: ${error.message}`);
     res.status(500).json({ message: error.message });
   }
+};
+
+// @desc    Mettre à jour le profil du médecin avec des fichiers
+// @route   POST /api/doctors/profile/with-files
+// @access  Private/Doctor
+exports.updateDoctorProfileWithFiles = async (req, res) => {
+  try {
+    logger.info(`Mise à jour du profil médecin avec fichiers pour l'utilisateur ${req.user._id}`);
+    
+    const doctor = await Doctor.findOne({ user: req.user._id });
+    
+    if (!doctor) {
+      logger.warn(`Profil médecin non trouvé pour l'utilisateur ${req.user._id}`);
+      return res.status(404).json({ message: 'Profil médecin non trouvé' });
+    }
+    
+    // Vérifier la spécialisation si fournie
+    if (req.body.specialization) {
+      const specialization = await Specialization.findById(req.body.specialization);
+      if (!specialization) {
+        return res.status(400).json({ message: 'Spécialisation non valide' });
+      }
+      doctor.specialization = req.body.specialization;
+    }
+    
+    // Mettre à jour les champs principaux
+    if (req.body.full_name) doctor.full_name = req.body.full_name;
+    if (req.body.first_name) doctor.first_name = req.body.first_name;
+    if (req.body.last_name) doctor.last_name = req.body.last_name;
+    if (req.body.date_of_birth) doctor.dob = new Date(req.body.date_of_birth);
+    
+    // Traiter les fichiers téléchargés
+    if (req.files && req.files.length > 0) {
+      // Enregistrer les chemins des fichiers dans un tableau
+      const certificationFiles = req.files.map(file => {
+        return {
+          filename: file.filename,
+          path: file.path,
+          originalname: file.originalname,
+          mimetype: file.mimetype
+        };
+      });
+      
+      doctor.certifications = certificationFiles;
+      doctor.hasSubmittedDocuments = true;
+    }
+
+    // Marquer le profil comme complété
+    doctor.profileCompleted = true;
+    
+    // Sauvegarder les modifications
+    const updatedDoctor = await doctor.save();
+    
+    logger.info(`Profil médecin mis à jour avec fichiers pour ${req.user._id}`);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Profil et documents mis à jour avec succès',
+      doctor: updatedDoctor
+    });
+  } catch (error) {
+    logger.error(`Erreur lors de la mise à jour du profil médecin avec fichiers: ${error.message}`);
+    res.status(500).json({ message: error.message });
+  }
 }; 

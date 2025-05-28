@@ -24,21 +24,28 @@ const DoctorLoginScreen = () => {
     setIsLoading(true);
     
     try {
+      console.log('Tentative de connexion avec email:', email);
+      
       const response = await axios.post('/api/auth/login', {
         email,
         password,
         role: 'Doctor'
       });
       
+      console.log('Réponse du serveur:', response.data);
+      
       if (response.data && response.data.token) {
-        localStorage.setItem('userToken', response.data.token);
+        localStorage.setItem('token', response.data.token);
         localStorage.setItem('userInfo', JSON.stringify(response.data));
         
+        console.log('Token stocké dans localStorage');
+        
         if (response.data.role === 'Doctor') {
+          console.log('Redirection vers le dashboard médecin');
           navigate('/doctor/dashboard');
         } else {
           setError('Access denied. This login is for doctors only.');
-          localStorage.removeItem('userToken');
+          localStorage.removeItem('token');
           localStorage.removeItem('userInfo');
         }
       } else {
@@ -49,8 +56,10 @@ const DoctorLoginScreen = () => {
       
       if (axios.isAxiosError(err)) {
         errorMessage = err.response?.data?.message || err.message || errorMessage;
+        console.error('Erreur Axios:', err.response?.data);
       } else if (err instanceof Error) {
         errorMessage = err.message;
+        console.error('Erreur standard:', err.message);
       }
       
       setError(errorMessage);

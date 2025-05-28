@@ -20,13 +20,11 @@ exports.protect = async (req, res, next) => {
 
       next();
     } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: 'Non autorisé, token invalide' });
+      console.error('Erreur de vérification du token:', error);
+      return res.status(401).json({ message: 'Non autorisé, token invalide' });
     }
-  }
-
-  if (!token) {
-    res.status(401).json({ message: 'Non autorisé, aucun token' });
+  } else {
+    return res.status(401).json({ message: 'Non autorisé, aucun token' });
   }
 };
 

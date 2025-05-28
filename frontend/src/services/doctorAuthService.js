@@ -73,6 +73,34 @@ const doctorAuthService = {
       console.error('Erreur lors de la mise à jour du profil:', error);
       throw error;
     }
+  },
+
+  /**
+   * Met à jour le profil du médecin avec des fichiers (certifications)
+   * @param {FormData} formData - Données du formulaire incluant les fichiers
+   * @returns {Promise<Object>} Profil mis à jour
+   */
+  async updateProfileWithFiles(formData) {
+    try {
+      // Récupérer le token manuellement pour s'assurer qu'il est présent
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Session expirée, veuillez vous reconnecter');
+      }
+
+      const response = await api.post('/doctors/profile/with-files', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      console.log('Réponse de mise à jour avec fichiers:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du profil avec fichiers:', error);
+      throw error;
+    }
   }
 };
 

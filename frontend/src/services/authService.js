@@ -7,9 +7,22 @@ export const authService = {
   // Inscription d'un nouvel utilisateur
   register: async (userData, role = 'patient') => {
     try {
+      console.log(`Tentative d'inscription en tant que ${role}:`, userData.email);
       const response = await api.post(`/auth/${role}/register`, userData);
+      
+      // Si la réponse contient un token, le stocker
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('userInfo', JSON.stringify(response.data));
+        
+        // Configurer le header d'autorisation pour les futures requêtes
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        console.log('Token stocké depuis register:', !!response.data.token);
+      }
+      
       return response.data;
     } catch (error) {
+      console.error('Erreur d\'inscription:', error);
       throw error.response?.data || { message: 'Erreur lors de l\'inscription' };
     }
   },
@@ -18,6 +31,17 @@ export const authService = {
   verifyOtp: async (email, otp) => {
     try {
       const response = await api.post('/auth/verify-otp', { email, otp });
+      
+      // Si la réponse contient un token, le stocker
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('userInfo', JSON.stringify(response.data));
+        
+        // Configurer le header d'autorisation pour les futures requêtes
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        console.log('Token stocké depuis verifyOtp:', !!response.data.token);
+      }
+      
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Code OTP invalide' };
@@ -37,16 +61,22 @@ export const authService = {
   // Connexion
   login: async (credentials, role = 'patient') => {
     try {
+      console.log(`Tentative de connexion en tant que ${role}:`, credentials.email);
       const response = await api.post(`/auth/${role}/login`, credentials);
       
       // Stocker le token
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('userRole', role);
+        localStorage.setItem('userInfo', JSON.stringify(response.data));
+        
+        // Configurer le header d'autorisation pour les futures requêtes
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        console.log('Token stocké depuis login:', !!response.data.token);
       }
       
       return response.data;
     } catch (error) {
+      console.error('Erreur de connexion:', error);
       throw error.response?.data || { message: 'Identifiants incorrects' };
     }
   },
@@ -54,13 +84,20 @@ export const authService = {
   // Déconnexion
   logout: () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
+    localStorage.removeItem('userInfo');
+    localStorage.removeItem('doctorProfileCompleted');
+    
+    // Supprimer le header d'autorisation
+    delete api.defaults.headers.common['Authorization'];
+    console.log('Déconnexion effectuée, token supprimé');
   },
 
   // Vérifier si l'utilisateur est connecté
   isAuthenticated: () => {
     const token = localStorage.getItem('token');
-    return !!token;
+    const isAuth = !!token;
+    console.log('Vérification d\'authentification:', isAuth);
+    return isAuth;
   },
 
   // Récupérer le profil de l'utilisateur connecté

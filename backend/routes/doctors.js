@@ -7,7 +7,8 @@ const {
   verifyDoctor,
   getDoctorStats,
   rateDoctor,
-  getDoctorReviews
+  getDoctorReviews,
+  updateDoctorProfileWithFiles
 } = require('../controllers/doctorController');
 const { protect, admin, doctor } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadMiddleware');
@@ -22,6 +23,7 @@ router.post('/:id/rate', protect, rateDoctor);
 
 // Routes protégées pour les médecins
 router.put('/profile', protect, doctor, updateDoctorProfile);
+router.post('/profile/with-files', protect, doctor, upload.array('certificationFiles', 5), updateDoctorProfileWithFiles);
 router.get('/stats', protect, doctor, getDoctorStats);
 
 // Routes protégées pour les admins

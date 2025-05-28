@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import type { FileWithPath } from 'react-dropzone';
+import axios from 'axios';
 import doctorAuthService from '../../../services/doctorAuthService';
 import './Details.css';
 
@@ -52,6 +53,39 @@ const DoctorDetailsScreen = () => {
   const [specializations, setSpecializations] = useState<Specialization[]>([]);
   const [loadingSpecializations, setLoadingSpecializations] = useState(true);
 
+  // Vérifier l'authentification au chargement du composant
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Aucun token trouvé, redirection vers la page de connexion');
+      navigate('/doctor/auth/login');
+      return;
+    }
+    
+    // Configurer explicitement le header d'autorisation pour les futures requêtes
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    console.log('Token trouvé et configuré dans Details.tsx:', !!token);
+    
+    // Récupérer les informations utilisateur si disponibles
+    const userInfo = localStorage.getItem('userInfo');
+    if (userInfo) {
+      try {
+        const userData = JSON.parse(userInfo);
+        console.log('Informations utilisateur chargées:', userData.email);
+        
+        // Pré-remplir le formulaire avec le nom si disponible
+        if (userData.fullName) {
+          setFormData(prev => ({
+            ...prev,
+            fullName: userData.fullName
+          }));
+        }
+      } catch (e) {
+        console.error('Erreur lors du chargement des infos utilisateur:', e);
+      }
+    }
+  }, [navigate]);
+
   // Configuration de react-dropzone pour le téléchargement de fichiers
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -79,7 +113,8 @@ const DoctorDetailsScreen = () => {
     const fetchSpecializations = async () => {
       try {
         setLoadingSpecializations(true);
-        const response = await axios.get('/api/specializations');
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await axios.get(`${apiUrl}/specializations`);
         setSpecializations(response.data);
         setLoadingSpecializations(false);
       } catch (err) {
@@ -145,8 +180,19 @@ const DoctorDetailsScreen = () => {
     });
 
     console.log('Envoi des données du profil médecin...');
+    console.log('Token d\'authentification présent:', !!localStorage.getItem('token'));
+    console.log('Spécialisation sélectionnée:', formData.specialization);
+    console.log('Nombre de fichiers:', formData.selectedFiles.length);
     
     try {
+      // Reconfigurer le token juste avant l'envoi pour s'assurer qu'il est présent
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Session expirée. Veuillez vous reconnecter.');
+        setTimeout(() => navigate('/doctor/auth/login'), 2000);
+        return;
+      }
+      
       // Utiliser le service pour envoyer les données avec les fichiers
       const response = await doctorAuthService.updateProfileWithFiles(dataToSubmit);
       

@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('userToken');
+    const token = localStorage.getItem('token');
     if (token) {
       try {
         const decodedUser = jwtDecode<User>(token);
@@ -45,10 +45,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         // Configure axios with token
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        console.log('Token trouvé et configuré depuis localStorage');
       } catch (error) {
         console.error('Token invalide', error);
-        localStorage.removeItem('userToken');
+        localStorage.removeItem('token');
       }
+    } else {
+      console.log('Aucun token trouvé dans localStorage');
     }
     setLoading(false);
   }, []);
@@ -65,12 +68,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const { token } = response.data;
       
       if (token) {
-        localStorage.setItem('userToken', token);
+        localStorage.setItem('token', token);
         const decodedUser = jwtDecode<User>(token);
         setUser(decodedUser);
         
         // Configure axios with token
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        console.log('Connexion réussie, token stocké');
       }
     } catch (error) {
       setError('Identifiants incorrects. Veuillez réessayer.');
@@ -88,12 +92,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const { token } = response.data;
       
       if (token) {
-        localStorage.setItem('userToken', token);
+        localStorage.setItem('token', token);
         const decodedUser = jwtDecode<User>(token);
         setUser(decodedUser);
         
         // Configure axios with token
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        console.log('Inscription réussie, token stocké');
       }
     } catch (error) {
       setError('Erreur lors de l\'inscription. Veuillez réessayer.');
@@ -104,9 +109,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('userToken');
+    localStorage.removeItem('token');
     setUser(null);
     delete axios.defaults.headers.common['Authorization'];
+    console.log('Déconnexion effectuée, token supprimé');
   };
 
   return (
