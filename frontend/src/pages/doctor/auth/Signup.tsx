@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Signup.css';
 
 const DoctorSignupScreen = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  interface FormData {
+    fullName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }
+
+  const [formData, setFormData] = useState<FormData>({
     fullName: '',
     email: '',
     password: '',
@@ -15,14 +23,14 @@ const DoctorSignupScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (name, value) => {
+  const handleChange = (name: keyof FormData, value: string) => {
     setFormData(prevState => ({
       ...prevState,
       [name]: value
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
@@ -51,9 +59,12 @@ const DoctorSignupScreen = () => {
       localStorage.setItem('tempUserId', response.data._id);
       localStorage.setItem('userType', 'doctor');
       navigate('/doctor/auth/details');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Signup error:', err);
-      setError(err.response?.data?.message || "Une erreur est survenue lors de l'inscription.");
+      const errorMessage = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+        : undefined;
+      setError(errorMessage || "Une erreur est survenue lors de l'inscription.");
     } finally {
       setIsLoading(false);
     }
@@ -137,10 +148,10 @@ const DoctorSignupScreen = () => {
 
           <button 
             type="submit" 
-            className={`create-button ${isLoading ? 'loading' : ''}`}
+            className="create-button"
             disabled={isLoading}
           >
-            {isLoading ? <div className="create-spinner"></div> : 'CREATE ACCOUNT'}
+            CREATE ACCOUNT
           </button>
 
           <div className="login-link" onClick={() => navigate('../login')}>
@@ -153,4 +164,4 @@ const DoctorSignupScreen = () => {
   );
 };
 
-export default DoctorSignupScreen; 
+export default DoctorSignupScreen;

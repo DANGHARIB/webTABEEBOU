@@ -1,12 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
+import type { FileWithPath } from 'react-dropzone';
+import doctorAuthService from '../../../services/doctorAuthService';
 import './Details.css';
+
+interface DateOfBirth {
+  day: string;
+  month: string;
+  year: string;
+}
+
+interface Specialization {
+  _id: string;
+  name: string;
+}
+
+interface FormData {
+  fullName: string;
+  dateOfBirth: DateOfBirth;
+  specialization: string;
+  selectedFiles: FileWithPath[];
+}
+
+interface ApiError extends Error {
+  response?: {
+    status: number;
+    data?: { message?: string };
+  };
+  request?: unknown;
+  message: string;
+}
 
 const DoctorDetailsScreen = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     fullName: '',
     dateOfBirth: { day: '', month: '', year: '' },
     specialization: '',
@@ -18,9 +47,9 @@ const DoctorDetailsScreen = () => {
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [showYearDropdown, setShowYearDropdown] = useState(false);
   const [showSpecializationDropdown, setShowSpecializationDropdown] = useState(false);
-  
+
   // État pour stocker les spécialisations récupérées de l'API
-  const [specializations, setSpecializations] = useState([]);
+  const [specializations, setSpecializations] = useState<Specialization[]>([]);
   const [loadingSpecializations, setLoadingSpecializations] = useState(true);
 
   // Configuration de react-dropzone pour le téléchargement de fichiers
@@ -30,14 +59,17 @@ const DoctorDetailsScreen = () => {
       'image/*': ['.png', '.jpg', '.jpeg']
     },
     multiple: true,
-    onDrop: acceptedFiles => {
-      setFormData(prev => ({ 
-        ...prev, 
-        selectedFiles: [...prev.selectedFiles, ...acceptedFiles.map(file => 
-          Object.assign(file, {
-            preview: URL.createObjectURL(file)
-          })
-        )] 
+    onDrop: (acceptedFiles: FileWithPath[]) => {
+      const filesWithPreview = acceptedFiles.map(file => {
+        const fileWithPreview = Object.assign(file, {
+          preview: URL.createObjectURL(file)
+        });
+        return fileWithPreview as FileWithPath & { preview: string };
+      });
+      
+      setFormData(prev => ({
+        ...prev,
+        selectedFiles: [...prev.selectedFiles, ...filesWithPreview]
       }));
     }
   });
@@ -64,33 +96,34 @@ const DoctorDetailsScreen = () => {
   useEffect(() => {
     return () => {
       formData.selectedFiles.forEach(file => {
-        if (file.preview) URL.revokeObjectURL(file.preview);
+        const fileWithPreview = file as FileWithPath & { preview?: string };
+        if (fileWithPreview.preview) URL.revokeObjectURL(fileWithPreview.preview);
       });
     };
   }, [formData.selectedFiles]);
 
-  const updateFormField = (field, value) => {
+  const updateFormField = (field: keyof FormData, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const updateDateField = (field, value) => {
+  const updateDateField = (field: keyof DateOfBirth, value: string) => {
     setFormData(prev => ({
       ...prev,
       dateOfBirth: { ...prev.dateOfBirth, [field]: value }
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    let first_name = formData.fullName.split(' ')[0] || '';
-    let last_name = formData.fullName.split(' ').slice(1).join(' ') || '';
+    const first_name = formData.fullName.split(' ')[0] || '';
+    const last_name = formData.fullName.split(' ').slice(1).join(' ') || '';
     
     if (!formData.fullName || !formData.dateOfBirth.day || !formData.dateOfBirth.month || !formData.dateOfBirth.year || !formData.specialization) {
-      setError('Please fill all required fields (Full Name, Date of Birth, Specialization).');
+      setError('Veuillez remplir tous les champs obligatoires (Nom complet, Date de naissance, Spécialisation).');
       return;
     }
 
@@ -106,44 +139,43 @@ const DoctorDetailsScreen = () => {
     dataToSubmit.append('date_of_birth', dob);
     dataToSubmit.append('specialization', formData.specialization);
     
+    // Ajouter chaque fichier au FormData
     formData.selectedFiles.forEach((file) => {
       dataToSubmit.append('certificationFiles', file);
     });
 
-    console.log('⏳ Envoi des données du profil médecin...');
+    console.log('Envoi des données du profil médecin...');
     
     try {
-      const response = await axios.put('/api/doctors/profile', dataToSubmit, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Utiliser le service pour envoyer les données avec les fichiers
+      const response = await doctorAuthService.updateProfileWithFiles(dataToSubmit);
       
-      console.log('✅ Profil médecin mis à jour avec succès:', response.data);
+      console.log('Profil médecin mis à jour avec succès:', response);
       
       // Stocker l'information que le profil a été complété
       localStorage.setItem('doctorProfileCompleted', 'true');
       
       // Rediriger vers la page d'attente de vérification
       navigate('/doctor/auth/under-review');
-    } catch (err) {
-      console.error('❌ Erreur lors de la mise à jour du profil médecin:', err);
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      console.error('❌ Erreur lors de la mise à jour du profil médecin:', error);
       
-      if (err.response) {
-        if (err.response.status === 401) {
+      if (apiError.response) {
+        if (apiError.response.status === 401) {
           setError('Session expirée. Veuillez vous reconnecter.');
           setTimeout(() => navigate('/doctor/auth/login'), 2000);
           return;
-        } else if (err.response.status === 413) {
+        } else if (apiError.response.status === 413) {
           setError('Les fichiers téléchargés sont trop volumineux. Veuillez réduire leur taille.');
         } else {
-          setError(err.response.data?.message || 'Erreur lors de la mise à jour du profil. Veuillez réessayer.');
+          setError(apiError.response.data?.message || 'Erreur lors de la mise à jour du profil. Veuillez réessayer.');
         }
-      } else if (err.request) {
-        console.error('Aucune réponse reçue:', err.request);
+      } else if (apiError.request) {
+        console.error('Aucune réponse reçue:', apiError.request);
         setError('Problème de connexion au serveur. Veuillez vérifier votre connexion internet.');
       } else {
-        console.error('Erreur de configuration:', err.message);
+        console.error('Erreur de configuration:', apiError.message);
         setError('Une erreur inattendue s\'est produite. Veuillez réessayer.');
       }
     } finally {
@@ -162,12 +194,12 @@ const DoctorDetailsScreen = () => {
   const years = Array.from({ length: 100 }, (_, i) => String(currentYear - i));
 
   // Fonction pour obtenir le nom de la spécialisation à partir de son ID
-  const getSpecializationName = (specializationId) => {
+  const getSpecializationName = (specializationId: string): string => {
     const specialization = specializations.find(spec => spec._id === specializationId);
     return specialization ? specialization.name : 'Select Specialization';
   };
 
-  const removeFile = (fileToRemove) => {
+  const removeFile = (fileToRemove: FileWithPath) => {
     setFormData(prev => ({
       ...prev,
       selectedFiles: prev.selectedFiles.filter(file => file !== fileToRemove)

@@ -1,40 +1,49 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Index.css';
+import logo from '../../../assets/logo.png'; // Chemin corrigé
 
 const DoctorAuthScreen = () => {
   const navigate = useNavigate();
 
   return (
     <div className="auth-container">
-      <div className="content-container">
-        <h1 className="auth-title">Welcome to</h1>
-        <h2 className="auth-subtitle">TABEEBOU.COM</h2>
-        
-        <div className="description-container">
-          <p className="auth-description">CONVENIENT CROSS BORDERS</p>
-          <p className="auth-description">TELEHEALTH SOLUTION</p>
-          <p className="auth-description">JUST FOR YOU</p>
+      <div className="auth-content-wrapper">
+        <div className="auth-left-content">
+          <div className="auth-logo-section">
+            <img src={logo} alt="TABEEBOU Logo" className="auth-logo" />
+            <h1 className="auth-site-title">TABEEBOU.COM</h1>
+          </div>
         </div>
-      </div>
-
-      <div className="button-container">
-        <button 
-          className="auth-button" 
-          onClick={() => navigate('/doctor/auth/login')}
-        >
-          Login
-        </button>
         
-        <button 
-          className="auth-button"
-          onClick={() => navigate('/doctor/auth/signup')}
-        >
-          Sign Up
-        </button>
+        <div className="auth-right-content">
+          <div className="auth-welcome-section">
+            <h1 className="auth-welcome-title">Welcome to<br />TABEEBOU.COM</h1>
+            <p className="auth-welcome-subtitle">
+              CONVENIENT CROSS BORDERS<br />
+              TELEHEALTH SOLUTION<br />
+              JUST FOR YOU
+            </p>
+            
+            <div className="auth-button-section">
+              <button 
+                className="auth-user-button" 
+                onClick={() => navigate('/doctor/auth/login')}
+              >
+                Login
+              </button>
+              
+              <button 
+                className="auth-user-button"
+                onClick={() => navigate('/doctor/auth/signup')}
+              >
+                Sign Up
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default DoctorAuthScreen; 
+export default DoctorAuthScreen;

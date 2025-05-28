@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Login.css';
@@ -11,7 +12,7 @@ const DoctorLoginScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!email || !password) {
@@ -46,15 +47,9 @@ const DoctorLoginScreen = () => {
     } catch (err) {
       let errorMessage = 'Login failed. Please try again.';
       
-      // Typer l'erreur pour accéder aux propriétés en toute sécurité
-      if (err && typeof err === 'object' && 'response' in err && 
-          err.response && typeof err.response === 'object' && 
-          'data' in err.response && err.response.data && 
-          typeof err.response.data === 'object' && 
-          'message' in err.response.data) {
-        errorMessage = err.response.data.message;
-      } else if (err && typeof err === 'object' && 'message' in err && 
-                typeof err.message === 'string') {
+      if (axios.isAxiosError(err)) {
+        errorMessage = err.response?.data?.message || err.message || errorMessage;
+      } else if (err instanceof Error) {
         errorMessage = err.message;
       }
       
@@ -114,10 +109,10 @@ const DoctorLoginScreen = () => {
 
           <button 
             type="submit" 
-            className={`login-button ${isLoading ? 'loading' : ''}`}
+            className="login-button"
             disabled={isLoading}
           >
-            {isLoading ? <div className="login-spinner"></div> : 'Login'}
+            Login
           </button>
           
           <div className="signup-link" onClick={() => navigate('../signup')}>

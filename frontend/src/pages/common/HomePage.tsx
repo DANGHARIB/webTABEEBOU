@@ -1,64 +1,35 @@
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
 import './HomePage.css';
+import logo from '../../assets/logo.png';
 
 function HomePage() {
-  const { user } = useAuth();
-
   return (
     <div className="home-container">
-      <div className="hero-section">
-        <h1>Bienvenue sur MediConsult</h1>
-        <p>La plateforme qui connecte les patients et les médecins</p>
-
-        {user ? (
-          <div className="auth-buttons">
-            <Link 
-              to={user.role === 'Patient' ? '/patient' : '/doctor'} 
-              className="primary-button"
-            >
-              Accéder à mon tableau de bord
-            </Link>
+      <div className="content-wrapper">
+        <div className="left-content">
+          <div className="logo-section">
+            <img src={logo} alt="TABEEBOU Logo" className="logo" />
+            <h1 className="site-title">TABEEBOU.COM</h1>
           </div>
-        ) : (
-          <div className="auth-buttons">
-            <div className="user-type-container">
-              <h2>Je suis un patient</h2>
-              <div className="button-group">
-                <Link to="/patient/auth/login" className="primary-button">Connexion</Link>
-                <Link to="/patient/auth/register" className="secondary-button">Inscription</Link>
-              </div>
-            </div>
+        </div>
+        
+        <div className="right-content">
+          <div className="welcome-section">
+            <h1 className="welcome-title">Welcome to<br />TABEEBOU.COM</h1>
+            <p className="welcome-subtitle">
+              CONVENIENT CROSS BORDERS<br />
+              TELEHEALTH SOLUTION<br />
+              JUST FOR YOU
+            </p>
             
-            <div className="user-type-container">
-              <h2>Je suis un médecin</h2>
-              <div className="button-group">
-                <Link to="/doctor/auth/login" className="primary-button">Connexion</Link>
-                <Link to="/doctor/auth/register" className="secondary-button">Inscription</Link>
-              </div>
+            <div className="button-section">
+              <Link to="/patient/auth/login" className="user-button patient-button">
+                I am a Patient
+              </Link>
+              <Link to="/doctor/auth" className="user-button doctor-button">
+                I am a Doctor
+              </Link>
             </div>
-          </div>
-        )}
-      </div>
-      
-      <div className="features-section">
-        <h2>Nos fonctionnalités</h2>
-        <div className="features-grid">
-          <div className="feature-card">
-            <h3>Prise de rendez-vous en ligne</h3>
-            <p>Planifiez vos consultations rapidement et facilement.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Dossiers médicaux sécurisés</h3>
-            <p>Accédez à votre historique médical en toute sécurité.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Téléconsultation</h3>
-            <p>Consultez votre médecin depuis le confort de votre domicile.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Gestion d'agenda pour médecins</h3>
-            <p>Optimisez votre emploi du temps professionnel.</p>
           </div>
         </div>
       </div>
@@ -66,4 +37,4 @@ function HomePage() {
   );
 }
 
-export default HomePage; 
+export default HomePage;
