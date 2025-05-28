@@ -432,10 +432,10 @@ const DoctorDetailsScreen = () => {
 
           <button 
             type="submit" 
-            className={`submit-button ${isLoading ? 'loading' : ''}`}
+            className="submit-button"
             disabled={isLoading}
           >
-            {isLoading ? <div className="submit-spinner"></div> : 'SUBMIT DETAILS'}
+            SUBMIT DETAILS
           </button>
         </form>
       </div>
@@ -443,4 +443,4 @@ const DoctorDetailsScreen = () => {
   );
 };
 
-export default DoctorDetailsScreen; 
+export default DoctorDetailsScreen;

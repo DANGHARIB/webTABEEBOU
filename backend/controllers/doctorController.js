@@ -5,6 +5,51 @@ const Appointment = require('../models/Appointment');
 const Availability = require('../models/Availability');
 const logger = require('../config/logger');
 
+// @desc    Get current doctor's profile
+// @route   GET /api/doctors/me
+// @access  Private/Doctor
+exports.getCurrentDoctor = async (req, res) => {
+  try {
+    logger.info(`Récupération du profil du médecin actuel pour l'utilisateur ${req.user._id}`);
+    
+    const doctor = await Doctor.findOne({ user: req.user._id })
+      .populate('specialization')
+      .populate('user', 'fullName email');
+    
+    if (!doctor) {
+      logger.warn(`Profil médecin non trouvé pour l'utilisateur ${req.user._id}`);
+      return res.status(404).json({ message: 'Profil médecin non trouvé' });
+    }
+    
+    // Calculate average rating
+    const averageRating = doctor.ratings && doctor.ratings.length > 0 
+      ? doctor.ratings.reduce((sum, rating) => sum + rating.value, 0) / doctor.ratings.length 
+      : 0;
+    
+    // Get appointments count
+    const appointmentsCount = await Appointment.countDocuments({ 
+      doctor: doctor._id,
+      status: 'completed'
+    });
+    
+    const doctorResponse = {
+      ...doctor.toJSON(),
+      averageRating: averageRating.toFixed(1),
+      ratingsCount: doctor.ratings ? doctor.ratings.length : 0,
+      appointmentsCount,
+      // Add verification status for frontend
+      status: doctor.verified ? 'verified' : (doctor.verificationStatus || 'pending'),
+      rejectionReason: doctor.rejectionReason
+    };
+    
+    logger.info(`Profil du médecin actuel récupéré avec succès pour ${req.user._id}`);
+    res.json(doctorResponse);
+  } catch (error) {
+    logger.error(`Erreur lors de la récupération du profil du médecin actuel: ${error.message}`);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Obtenir tous les médecins
 // @route   GET /api/doctors
 // @access  Public

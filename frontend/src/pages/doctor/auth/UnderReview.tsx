@@ -10,98 +10,107 @@ const AccountUnderReviewScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fonction pour vérifier le statut du compte
+  // Function to check account status
   const checkAccountStatus = useCallback(async () => {
     try {
       setLoading(true);
-      // Récupérer le token
+      // Get token
       const token = localStorage.getItem('token');
       
       if (!token) {
-        console.error("Aucun token trouvé dans localStorage");
-        setError("Aucune session active trouvée. Veuillez vous reconnecter.");
+        console.error("No token found in localStorage");
+        setError("No active session found. Please log in again.");
         setLoading(false);
         setTimeout(() => navigate('/doctor/auth/login'), 3000);
         return;
       }
       
-      console.log("Vérification du statut avec token présent:", !!token);
+      console.log("Checking status with token present:", !!token);
       
-      const response = await axios.get('/api/doctors/verification-status', {
+      const response = await axios.get('/api/doctors/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log("Réponse du serveur:", response.data);
+      console.log("Server response:", response.data);
       
-      setVerificationStatus(response.data.status);
-      
-      if (response.data.rejectionReason) {
-        setRejectionReason(response.data.rejectionReason);
+      // Set verification status based on the doctor's verification status
+      if (response.data.verified) {
+        setVerificationStatus('verified');
+      } else if (response.data.status === 'rejected') {
+        setVerificationStatus('rejected');
+        if (response.data.rejectionReason) {
+          setRejectionReason(response.data.rejectionReason);
+        }
+      } else {
+        setVerificationStatus('pending');
       }
       
       setError('');
     } catch (err) {
-      console.error('Erreur lors de la vérification du statut:', err);
-      setError("Impossible de vérifier le statut de votre compte. Veuillez réessayer plus tard.");
+      console.error('Error checking account status:', err);
+      setError("Unable to check your account status. Please try again later.");
     } finally {
       setLoading(false);
     }
   }, [navigate]);
 
-  // Vérifier le statut périodiquement
+  // Check status periodically
   useEffect(() => {
-    // Vérification initiale
+    // Initial check
     checkAccountStatus();
     
-    // Configurer une vérification périodique
-    const intervalId = setInterval(checkAccountStatus, 30000); // Vérifier toutes les 30 secondes
+    // Set up periodic check
+    const intervalId = setInterval(checkAccountStatus, 30000); // Check every 30 seconds
     
-    // Nettoyer l'intervalle à la destruction du composant
+    // Clean up interval on component destruction
     return () => clearInterval(intervalId);
   }, [checkAccountStatus]);
   
-  // Gérer la redirection vers la page d'accueil quand le médecin est vérifié
+  // Handle redirect to login when doctor is verified
   const handleLoginPress = () => {
     try {
       localStorage.setItem('userType', 'doctor');
       navigate('/doctor/auth/login');
     } catch (err) {
-      console.error('Erreur lors de la navigation:', err);
+      console.error('Navigation error:', err);
     }
   };
   
-  // Gérer la redirection vers la page d'inscription quand le médecin est rejeté
+  // Handle redirect to signup when doctor is rejected
   const handleTryAgainPress = () => {
     try {
-      // Supprimer toutes les données stockées pour recommencer à zéro
+      // Remove all stored data to start fresh
       localStorage.removeItem('userType');
       localStorage.removeItem('token');
       localStorage.removeItem('userInfo');
       localStorage.removeItem('tempUserId');
       localStorage.removeItem('doctorProfileCompleted');
       
-      // Supprimer aussi le header d'autorisation
+      // Remove authorization header
       delete axios.defaults.headers.common['Authorization'];
       
       navigate('/doctor/auth/signup');
     } catch (err) {
-      console.error('Erreur lors de la navigation:', err);
+      console.error('Navigation error:', err);
     }
   };
 
-  // Afficher l'écran approprié en fonction du statut de vérification
+  // Display appropriate screen based on verification status
   if (verificationStatus === 'verified') {
     return (
-      <div className="under-review-container">
-        <div className="review-content">
-          <div className="status-icon verified">✓</div>
-          <h1 className="review-title">Votre compte a été vérifié!</h1>
-          <p className="review-message">
-            Félicitations! Votre compte médecin a été approuvé. Vous pouvez maintenant vous connecter pour commencer à utiliser la plateforme.
-          </p>
-          <button className="login-button" onClick={handleLoginPress}>
-            Se connecter
-          </button>
+      <div className="review-container">
+        <div className="review-content-wrapper">
+          <div className="review-content-section">
+            <h1 className="review-main-title">Your account has been verified!</h1>
+            <p className="review-description">
+              Congratulations! Your doctor account has been approved. You can now log in to start using the platform.
+            </p>
+            <div className="review-button-section">
+              <button className="review-action-button" onClick={handleLoginPress}>
+                Log In
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -109,55 +118,62 @@ const AccountUnderReviewScreen = () => {
   
   if (verificationStatus === 'rejected') {
     return (
-      <div className="under-review-container">
-        <div className="review-content">
-          <div className="status-icon rejected">✗</div>
-          <h1 className="review-title">Votre demande a été refusée</h1>
-          <p className="review-message">
-            Nous avons examiné votre demande de compte médecin et nous sommes désolés de vous informer qu'elle n'a pas été approuvée.
-            {rejectionReason ? <span className="rejection-reason">Raison: {rejectionReason}</span> : ''}
-          </p>
-          <button className="try-again-button" onClick={handleTryAgainPress}>
-            Essayer avec un nouveau compte
-          </button>
+      <div className="review-container">
+        <div className="review-content-wrapper">
+          <div className="review-content-section">
+            <h1 className="review-main-title">Your application has been rejected</h1>
+            <p className="review-description">
+              We have reviewed your doctor account application and we regret to inform you that it has not been approved.
+              {rejectionReason && (
+                <span className="review-rejection-reason">
+                  <br /><br />Reason: {rejectionReason}
+                </span>
+              )}
+            </p>
+            <div className="review-button-section">
+              <button className="review-action-button rejected" onClick={handleTryAgainPress}>
+                Try with a new account
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
   
-  // État par défaut - En attente
+  // Default state - Pending
   return (
-    <div className="under-review-container">
-      <div className="review-content">
-        {loading ? (
-          <div className="loading-spinner"></div>
-        ) : error ? (
-          <div className="status-icon error">!</div>
-        ) : (
-          <div className="status-icon pending">⌛</div>
-        )}
-        
-        <h1 className="review-title">
-          {error ? "Erreur de connexion" : "Votre compte est en cours d'examen"}
-        </h1>
-        
-        <p className="review-message">
-          {error ? error : 
-            "Vous recevrez un email avec une confirmation une fois l'examen terminé ou, si nécessaire, un email vous demandant des informations supplémentaires ou vous informant de tout problème."}
-        </p>
-        
-        {error && (
-          <button className="retry-button" onClick={checkAccountStatus}>
-            Réessayer
-          </button>
-        )}
-        
-        {!error && !loading && (
-          <p className="thank-you-message">Merci de votre patience!</p>
-        )}
+    <div className="review-container">
+      <div className="review-content-wrapper">
+        <div className="review-content-section">
+          {loading ? (
+            <>
+              <div className="review-loading-spinner"></div>
+              <h1 className="review-main-title">Checking your account status...</h1>
+            </>
+          ) : error ? (
+            <>
+              <h1 className="review-main-title">Connection Error</h1>
+              <p className="review-description">{error}</p>
+              <div className="review-button-section">
+                <button className="review-action-button" onClick={checkAccountStatus}>
+                  Retry
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="review-main-title">Your account is currently under review.</h1>
+              <p className="review-description">
+                You will receive an email with a confirmation once the review is complete or, if needed, an email requesting additional information or notifying you of any issues.
+              </p>
+              <p className="review-thank-you">Thank you for your patience!</p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default AccountUnderReviewScreen; 
+export default AccountUnderReviewScreen;

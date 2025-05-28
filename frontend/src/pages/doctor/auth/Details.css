@@ -356,9 +356,10 @@ body, html {
   box-shadow: none;
 }
 
-.submit-button.loading {
+/* SUPPRIMÉ: État de loading qui causait le problème visuel */
+/* .submit-button.loading {
   opacity: 0.8;
-}
+} */
 
 .submit-spinner {
   width: 20px;
