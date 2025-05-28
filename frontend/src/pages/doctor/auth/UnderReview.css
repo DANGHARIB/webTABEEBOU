@@ -1,0 +1,137 @@
+.under-review-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: white;
+  padding: 20px;
+}
+
+.review-content {
+  max-width: 500px;
+  padding: 30px;
+  text-align: center;
+}
+
+.status-icon {
+  font-size: 40px;
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 30px;
+  text-align: center;
+}
+
+.status-icon.verified {
+  background-color: #e6f4ea;
+  color: #4CAF50;
+}
+
+.status-icon.rejected {
+  background-color: #fdeded;
+  color: #F44336;
+}
+
+.status-icon.error {
+  background-color: #fff8e1;
+  color: #F57C00;
+}
+
+.status-icon.pending {
+  background-color: #f0f8ff;
+  color: #0A1E42;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0A1E42;
+  border-radius: 50%;
+  margin: 0 auto 30px;
+  animation: spinner 1s linear infinite;
+}
+
+@keyframes spinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.review-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #0A1E42;
+  margin-bottom: 20px;
+}
+
+.review-message {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.rejection-reason {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+  color: #F44336;
+}
+
+.thank-you-message {
+  font-size: 16px;
+  color: #666;
+  margin: 20px 0 40px;
+}
+
+.login-button, .retry-button, .try-again-button {
+  border: none;
+  border-radius: 10px;
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-button {
+  background-color: #7BAFD4;
+  color: white;
+}
+
+.login-button:hover {
+  background-color: #6b9dc4;
+}
+
+.retry-button {
+  background-color: #0A1E42;
+  color: white;
+}
+
+.retry-button:hover {
+  background-color: #152d4f;
+}
+
+.try-again-button {
+  background-color: #F44336;
+  color: white;
+}
+
+.try-again-button:hover {
+  background-color: #d32f2f;
+}
+
+@media (max-width: 600px) {
+  .review-content {
+    padding: 20px;
+  }
+  
+  .status-icon {
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    font-size: 30px;
+  }
+} 

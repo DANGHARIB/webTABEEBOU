@@ -1,0 +1,31 @@
+# Dépendances
+/node_modules
+
+# Fichiers de configuration sensibles
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dossier de production
+/build
+/dist
+
+# Fichiers d'upload
+/uploads/*
+!/uploads/.gitkeep
+
+# Couverture de tests
+/coverage
+
+# Fichiers temporaires
+.DS_Store
+.idea
+.vscode
+*.swp
+*.swo
+tmp/ 

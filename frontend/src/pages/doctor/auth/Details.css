@@ -1,0 +1,261 @@
+.doctor-details-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  background-color: white;
+  min-height: 100vh;
+}
+
+.doctor-details-content {
+  width: 100%;
+  max-width: 600px;
+}
+
+.doctor-details-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #0A1E42;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.doctor-details-form {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 25px;
+  width: 100%;
+}
+
+.input-label {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.text-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #E0E0E0;
+  font-size: 16px;
+  padding: 10px 0;
+  color: #0A1E42;
+  background-color: transparent;
+}
+
+.text-input:focus {
+  outline: none;
+  border-bottom: 2px solid #7BAFD4;
+}
+
+.date-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.date-dropdown {
+  flex: 1;
+  position: relative;
+}
+
+.date-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #E0E0E0;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.date-button span {
+  font-size: 16px;
+  color: #0A1E42;
+}
+
+.chevron-down {
+  border: solid #0A1E42;
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.dropdown-menu, .dropdown-menu-full-width {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 5px;
+  z-index: 1000;
+  max-height: 150px;
+  overflow: hidden;
+}
+
+.dropdown-scroll {
+  overflow-y: auto;
+  max-height: 150px;
+}
+
+.dropdown-item {
+  padding: 10px;
+  border-bottom: 1px solid #F0F0F0;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #E0E0E0;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.dropdown-button span {
+  font-size: 16px;
+  color: #0A1E42;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #7BAFD4;
+  border-radius: 50%;
+  margin: 10px auto;
+  animation: spinner 1s linear infinite;
+}
+
+@keyframes spinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dropzone {
+  border: 2px dashed #E0E0E0;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.dropzone:hover {
+  border-color: #7BAFD4;
+}
+
+.upload-btn {
+  background-color: #7BAFD4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.file-list-container {
+  margin-top: 20px;
+}
+
+.file-list-title {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.file-list-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #EEE;
+}
+
+.document-icon::before {
+  content: "📄";
+  margin-right: 10px;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 10px;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: #F44336;
+  font-size: 18px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.error-text {
+  color: red;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.submit-button {
+  width: 100%;
+  background-color: #7BAFD4;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.submit-button.loading {
+  opacity: 0.7;
+}
+
+.submit-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid white;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spinner 1s linear infinite;
+}
+
+@media (max-width: 600px) {
+  .doctor-details-container {
+    padding: 20px;
+  }
+  
+  .date-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+} 
