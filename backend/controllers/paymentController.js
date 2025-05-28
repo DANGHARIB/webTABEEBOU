@@ -97,6 +97,9 @@ exports.processPayment = async (req, res) => {
   }
 };
 
+// Alias pour compatibilité avec les anciennes routes
+exports.createPayment = exports.processPayment;
+
 // @desc    Get all payments for the logged-in patient
 // @route   GET /api/payments/patient
 // @access  Private/Patient
