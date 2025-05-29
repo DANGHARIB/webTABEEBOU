@@ -1,7 +1,9 @@
-import { createContext, useState, useEffect, type ReactNode } from 'react';
+// AuthContext.tsx
+import React, { createContext, useState, useEffect, type ReactNode } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
+// Define user types
 interface User {
   id: string;
   email: string;
@@ -16,6 +18,7 @@ interface UserRegisterData {
   [key: string]: string | number | boolean;
 }
 
+// Define context type
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -25,13 +28,16 @@ interface AuthContextType {
   logout: () => void;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create context with default undefined value
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Define props interface
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+// Auth Provider component
+const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +55,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       } catch (error) {
         console.error('Token invalide', error);
         localStorage.removeItem('token');
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('userRole');
       }
     } else {
       console.log('Aucun token trouvé dans localStorage');
@@ -60,15 +68,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`/api/${role.toLowerCase()}/auth/login`, {
+      // Use the correct API endpoint format
+      const response = await axios.post('/api/auth/login', {
         email,
-        password
+        password,
+        role
       });
       
       const { token } = response.data;
       
       if (token) {
         localStorage.setItem('token', token);
+        localStorage.setItem('userRole', role);
+        
+        // Store user info if available
+        if (response.data.user) {
+          localStorage.setItem('userInfo', JSON.stringify(response.data.user));
+        }
+        
         const decodedUser = jwtDecode<User>(token);
         setUser(decodedUser);
         
@@ -88,11 +105,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`/api/${role.toLowerCase()}/auth/register`, userData);
+      const response = await axios.post('/api/auth/register', {
+        ...userData,
+        role
+      });
+      
       const { token } = response.data;
       
       if (token) {
         localStorage.setItem('token', token);
+        localStorage.setItem('userRole', role);
+        
+        // Store user info if available
+        if (response.data.user) {
+          localStorage.setItem('userInfo', JSON.stringify(response.data.user));
+        }
+        
         const decodedUser = jwtDecode<User>(token);
         setUser(decodedUser);
         
@@ -110,6 +138,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userInfo');
+    localStorage.removeItem('userRole');
     setUser(null);
     delete axios.defaults.headers.common['Authorization'];
     console.log('Déconnexion effectuée, token supprimé');
@@ -120,4 +150,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       {children}
     </AuthContext.Provider>
   );
-}; 
+};
+
+// Export both context and provider
+export { AuthContext, AuthProvider };

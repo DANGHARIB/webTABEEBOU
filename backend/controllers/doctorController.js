@@ -140,6 +140,49 @@ exports.getAllDoctors = async (req, res) => {
 // @access  Public
 exports.getDoctorById = async (req, res) => {
   try {
+    // Special case for 'me' - redirect to getCurrentDoctor function
+    if (req.params.id === 'me') {
+      if (!req.user || !req.user._id) {
+        logger.warn('Tentative d\'accès au profil médecin sans être authentifié');
+        return res.status(401).json({ message: 'Non autorisé, authentification requise' });
+      }
+      
+      // Find doctor by user ID instead of trying to use 'me' as ObjectId
+      const doctor = await Doctor.findOne({ user: req.user._id })
+        .populate('specialization')
+        .populate('user', 'fullName email');
+      
+      if (!doctor) {
+        logger.warn(`Profil médecin non trouvé pour l'utilisateur ${req.user._id}`);
+        return res.status(404).json({ message: 'Profil médecin non trouvé' });
+      }
+      
+      // Calculate average rating
+      const averageRating = doctor.ratings && doctor.ratings.length > 0 
+        ? doctor.ratings.reduce((sum, rating) => sum + rating.value, 0) / doctor.ratings.length 
+        : 0;
+      
+      // Get appointments count
+      const appointmentsCount = await Appointment.countDocuments({ 
+        doctor: doctor._id,
+        status: 'completed'
+      });
+      
+      const doctorResponse = {
+        ...doctor.toJSON(),
+        averageRating: averageRating.toFixed(1),
+        ratingsCount: doctor.ratings ? doctor.ratings.length : 0,
+        appointmentsCount,
+        // Add verification status for frontend
+        status: doctor.verified ? 'verified' : (doctor.verificationStatus || 'pending'),
+        rejectionReason: doctor.rejectionReason
+      };
+      
+      logger.info(`Profil du médecin actuel récupéré avec succès pour ${req.user._id}`);
+      return res.json(doctorResponse);
+    }
+    
+    // Normal case - get doctor by ID
     logger.info(`Récupération du médecin avec l'ID ${req.params.id}`);
     
     const doctor = await Doctor.findById(req.params.id)

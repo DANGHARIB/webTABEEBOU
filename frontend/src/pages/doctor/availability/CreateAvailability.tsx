@@ -1,45 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format, addDays, isToday, isTomorrow, isAfter, parse } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { doctorAPI } from '../../../services/api';
-import './CreateAvailability.css';
+import {
+  format,
+  addDays,
+  isToday,
+  isTomorrow
+} from 'date-fns';
+import { enUS } from 'date-fns/locale';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCalendarAlt,
+  faInfoCircle,
+  faLongArrowAltRight,
+  faClock,
+  faSave,
+  faPlus,
+  faTimes,
+  faExclamationCircle
+} from '@fortawesome/free-solid-svg-icons';
 
-// Interface pour les créneaux horaires
+import './CreateAvailability.css';
+import { doctorAPI } from '../../../services/api';
+
+
+// Interface for time slots
 interface TimeSlot {
   startTime: string;
   endTime: string;
   id: string;
 }
 
-// Interface pour les disponibilités à envoyer à l'API
-interface AvailabilityToSend {
+// Type for single slot API payload
+type SingleSlotPayload = {
   date: string;
   startTime: string;
   endTime: string;
+  isBooked: boolean;
 }
 
-// Interface pour les erreurs Axios
-interface AxiosError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-  message?: string;
+
+
+// Interface for day cards in calendar
+interface DayCard {
+  date: Date;
+  dayName: string;
+  dayNumber: number;
+  month: string;
 }
 
-// Fonction pour obtenir le prochain créneau horaire disponible
+// Function to get the next available time slot
 const getNextAvailableTime = (): { hour: number; minute: number; formatted: string } => {
   const now = new Date();
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
   
-  // Trouver le prochain créneau disponible en incréments de 30 minutes
+  // Find the next available slot in 30-minute increments
   let nextAvailableHour = currentHour;
   let nextAvailableMinute = 0;
   
-  // Arrondir à l'intervalle de 30 minutes suivant
+  // Round to the next 30-minute interval
   if (currentMinute < 30) {
     nextAvailableMinute = 30;
   } else {
@@ -47,7 +66,7 @@ const getNextAvailableTime = (): { hour: number; minute: number; formatted: stri
     nextAvailableMinute = 0;
   }
   
-  // Si on passe à l'heure suivante et que c'est minuit, limiter à 23:30
+  // If we move to the next hour and it's midnight, limit to 23:30
   if (nextAvailableHour >= 24) {
     nextAvailableHour = 23;
     nextAvailableMinute = 30;
@@ -60,15 +79,24 @@ const getNextAvailableTime = (): { hour: number; minute: number; formatted: stri
   };
 };
 
-// Fonction pour créer un slot initial avec l'heure actuelle
+// Function to create an initial time slot with the current time
 const getInitialTimeSlot = (): TimeSlot => {
   const startTime = getNextAvailableTime();
   
-  // Ajouter une heure pour l'heure de fin
-  let endHour = startTime.hour + 1;
+  // Calculate end time (30 minutes or 1 hour after the start time)
+  let endHour = startTime.hour;
   let endMinute = startTime.minute;
   
-  // Si on dépasse minuit
+  // If start time is on the hour, add 30 minutes for end time
+  if (endMinute === 0) {
+    endMinute = 30;
+  } else {
+    // If start time is at half hour, add 1 hour (move to the next hour)
+    endHour += 1;
+    endMinute = 0;
+  }
+  
+  // If we exceed midnight
   if (endHour >= 24) {
     endHour = 23;
     endMinute = 59;
@@ -87,20 +115,49 @@ const CreateAvailability = () => {
   const navigate = useNavigate();
   const [date, setDate] = useState<Date>(new Date());
   const [slots, setSlots] = useState<TimeSlot[]>(() => {
-    // Initialiser avec l'heure actuelle arrondie aux 30 minutes suivantes
+    // Initialize with current time rounded to the next 30 minutes
     return [getInitialTimeSlot()];
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showTip, setShowTip] = useState<boolean>(false);
+  const [dayCards, setDayCards] = useState<DayCard[]>([]);
+  const [showAlert, setShowAlert] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>("");
+  
+  // Generate day cards for the next 14 days
+  useEffect(() => {
+    const generateDayCards = () => {
+      const cards: DayCard[] = [];
+      const today = new Date();
+      
+      for (let i = 0; i < 14; i++) {
+        const currentDate = addDays(today, i);
+        const dayName = format(currentDate, 'EEE', { locale: enUS });
+        const dayNumber = currentDate.getDate();
+        const month = format(currentDate, 'MMM', { locale: enUS });
+        
+        cards.push({
+          date: currentDate,
+          dayName,
+          dayNumber,
+          month
+        });
+      }
+      
+      return cards;
+    };
+    
+    setDayCards(generateDayCards());
+  }, []);
   
   // Format date for display
   const formatDateForDisplay = (date: Date): string => {
     if (isToday(date)) {
-      return 'Aujourd\'hui';
+      return 'Today';
     } else if (isTomorrow(date)) {
-      return 'Demain';
+      return 'Tomorrow';
     } else {
-      return format(date, 'EEEE d MMMM yyyy', { locale: fr });
+      return format(date, 'EEEE d MMMM yyyy', { locale: enUS });
     }
   };
   
@@ -109,7 +166,7 @@ const CreateAvailability = () => {
     const selectedDate = new Date(e.target.value);
     setDate(selectedDate);
     
-    // Si on change la date pour aujourd'hui, mettre à jour l'heure aussi
+    // If we change the date to today, update the time as well
     if (isToday(selectedDate)) {
       setSlots([getInitialTimeSlot()]);
     }
@@ -123,12 +180,21 @@ const CreateAvailability = () => {
     if (isStart) {
       newSlots[slotIndex].startTime = value;
       
-      // Mise à jour automatique de l'heure de fin (1 heure plus tard)
+      // Calculate end time based on 30-minute intervals
       const [hours, minutes] = value.split(':').map(Number);
-      let endHour = hours + 1;
+      let endHour = hours;
       let endMinute = minutes;
       
-      // Si on dépasse minuit
+      // If start time is on the hour, add 30 minutes for end time
+      if (endMinute === 0) {
+        endMinute = 30;
+      } else {
+        // If start time is at half hour, add 1 hour (move to the next hour)
+        endHour += 1;
+        endMinute = 0;
+      }
+      
+      // If we exceed midnight
       if (endHour >= 24) {
         endHour = 23;
         endMinute = 59;
@@ -139,16 +205,16 @@ const CreateAvailability = () => {
     } else {
       newSlots[slotIndex].endTime = value;
       
-      // Vérifier que l'heure de fin est après l'heure de début
+      // Check that end time is after start time
       const [startHour, startMinute] = newSlots[slotIndex].startTime.split(':').map(Number);
       const [endHour, endMinute] = value.split(':').map(Number);
       
       const startMinutes = startHour * 60 + startMinute;
       const endMinutes = endHour * 60 + endMinute;
       
-      // Si l'heure de fin est avant ou égale à l'heure de début
+      // If end time is before or equal to start time
       if (endMinutes <= startMinutes) {
-        // Calculer une nouvelle heure de fin valide (30 minutes après le début)
+        // Calculate a valid new end time (30 minutes after start)
         let newEndHour = startHour;
         let newEndMinute = startMinute;
         
@@ -164,13 +230,15 @@ const CreateAvailability = () => {
           newEndMinute = 30;
         }
         
-        // Mettre à jour avec la nouvelle heure de fin valide
+        // Update with the new valid end time
         const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
         newSlots[slotIndex].endTime = newEndTime;
         
-        // Informer l'utilisateur via une alerte
+        // Inform user via alert
         setTimeout(() => {
-          alert('L\'heure de fin doit être après l\'heure de début. L\'heure de fin a été ajustée automatiquement.');
+          setShowAlert(true);
+          setAlertMessage('End time must be after start time. End time has been adjusted automatically.');
+          setTimeout(() => setShowAlert(false), 3000);
         }, 100);
       }
     }
@@ -180,19 +248,28 @@ const CreateAvailability = () => {
   
   // Add a new time slot
   const addSlot = (): void => {
-    // Utiliser le dernier slot comme base
+    // Use the last slot as the base
     const lastSlot = slots[slots.length - 1];
     const [lastEndHour, lastEndMinute] = lastSlot.endTime.split(':').map(Number);
     
-    // Commencer à partir de l'heure de fin du dernier slot
-    let newStartHour = lastEndHour;
-    let newStartMinute = lastEndMinute;
+    // Start from the end time of the last slot
+    const newStartHour = lastEndHour;
+    const newStartMinute = lastEndMinute;
     
-    // Calculer l'heure de fin (1 heure après le début)
-    let newEndHour = newStartHour + 1;
+    // Calculate the end time based on 30-minute intervals
+    let newEndHour = newStartHour;
     let newEndMinute = newStartMinute;
     
-    // Gérer le dépassement de minuit
+    // If start time is on the hour, add 30 minutes for end time
+    if (newEndMinute === 0) {
+      newEndMinute = 30;
+    } else {
+      // If start time is at half hour, add 1 hour (move to the next hour)
+      newEndHour += 1;
+      newEndMinute = 0;
+    }
+    
+    // Handle midnight overflow
     if (newEndHour >= 24) {
       newEndHour = 23;
       newEndMinute = 59;
@@ -201,17 +278,40 @@ const CreateAvailability = () => {
     const newStartTime = `${newStartHour.toString().padStart(2, '0')}:${newStartMinute.toString().padStart(2, '0')}`;
     const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
     
+    // Check for overlapping slots
+    const overlapping = slots.some(slot => {
+      const [slotStartHour, slotStartMinute] = slot.startTime.split(':').map(Number);
+      const [slotEndHour, slotEndMinute] = slot.endTime.split(':').map(Number);
+      
+      const slotStartMinutes = slotStartHour * 60 + slotStartMinute;
+      const slotEndMinutes = slotEndHour * 60 + slotEndMinute;
+      const newStartMinutes = newStartHour * 60 + newStartMinute;
+      const newEndMinutes = newEndHour * 60 + newEndMinute;
+      
+      // Check if the new slot overlaps with any existing slot
+      return (newStartMinutes < slotEndMinutes && newEndMinutes > slotStartMinutes);
+    });
+    
+    if (overlapping) {
+      setShowAlert(true);
+      setAlertMessage('Cannot add overlapping time slots');
+      setTimeout(() => setShowAlert(false), 3000);
+      return;
+    }
+    
     setSlots([...slots, { 
       startTime: newStartTime, 
-      endTime: newEndTime,
-      id: Date.now().toString()
+      endTime: newEndTime, 
+      id: Date.now().toString() 
     }]);
   };
   
   // Remove a time slot
   const removeSlot = (index: number): void => {
     if (slots.length === 1) {
-      alert('Vous devez conserver au moins un créneau horaire');
+      setShowAlert(true);
+      setAlertMessage('You must keep at least one time slot');
+      setTimeout(() => setShowAlert(false), 3000);
       return;
     }
     
@@ -220,16 +320,17 @@ const CreateAvailability = () => {
     setSlots(newSlots);
   };
   
-  // Quick date selection buttons
-  const quickDateSelect = (daysToAdd: number): void => {
-    const newDate = addDays(new Date(), daysToAdd);
-    setDate(newDate);
+  // Select a day from the day cards
+  const selectDay = (selectedDate: Date): void => {
+    setDate(selectedDate);
     
-    // Si on sélectionne aujourd'hui, mettre à jour l'heure aussi
-    if (daysToAdd === 0) {
+    // If selecting today, update the time slots to start from current time
+    if (isToday(selectedDate)) {
       setSlots([getInitialTimeSlot()]);
     }
   };
+  
+  
   
   // Save availabilities
   const saveAvailabilities = async (): Promise<void> => {
@@ -255,7 +356,9 @@ const CreateAvailability = () => {
       });
       
       if (pastSlots.length > 0) {
-        alert('Vous ne pouvez pas créer des créneaux de disponibilité dans le passé. Veuillez sélectionner des créneaux horaires futurs.');
+        setShowAlert(true);
+        setAlertMessage('You cannot create availability slots in the past. Please select future time slots.');
+        setTimeout(() => setShowAlert(false), 5000);
         return;
       }
     }
@@ -270,7 +373,9 @@ const CreateAvailability = () => {
     });
     
     if (invalidSlots.length > 0) {
-      alert('L\'heure de début doit être antérieure à l\'heure de fin pour chaque créneau.');
+      setShowAlert(true);
+      setAlertMessage('Start time must be before end time for each slot.');
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     
@@ -286,7 +391,9 @@ const CreateAvailability = () => {
     });
     
     if (duplicates.length > 0) {
-      alert('Vous avez des créneaux horaires en double. Chaque créneau horaire doit être unique pour la journée.');
+      setShowAlert(true);
+      setAlertMessage('You have duplicate time slots. Each time slot must be unique for the day.');
+      setTimeout(() => setShowAlert(false), 5000);
       return;
     }
     
@@ -296,21 +403,80 @@ const CreateAvailability = () => {
       // Format date for the API
       const dateToSend = format(date, 'yyyy-MM-dd');
       
-      // Prepare availabilities to send
-      const availabilitiesToSend: AvailabilityToSend[] = slots.map(slot => ({
-        date: dateToSend,
-        startTime: slot.startTime,
-        endTime: slot.endTime
-      }));
+      // Simplifying the approach to fix the API error
+      // The backend expects each availability to have doctorId and isBooked fields
+      // Create a new function to directly create individual slots one by one
+      try {
+        setIsSubmitting(true);
+        
+        // Rather than batch creation, try creating one by one
+        for (const slot of slots) {
+          const singleSlot = {
+            date: dateToSend,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            // Omit _id as it will be generated by the server
+            isBooked: false
+          };
+          
+          console.log('Creating availability slot:', JSON.stringify(singleSlot));
+          
+          // Use the single slot creation API instead of batch
+          // This might avoid whatever validation issue is happening with the batch API
+          await doctorAPI.createAvailability(singleSlot as { _id: string } & SingleSlotPayload);
+          
+          // Add a small delay between requests to avoid overloading the server
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        console.log('All slots created successfully');
+      } catch (apiError) {
+        console.error('Error creating availability slot:', apiError);
+        throw apiError; // Re-throw to be caught by the outer try/catch
+      }
       
-      // API call to create availabilities
-      await doctorAPI.createBatchAvailability(availabilitiesToSend);
-      
-      alert('Vos créneaux de disponibilité ont été enregistrés avec succès.');
-      navigate('/doctor/availability');
+      setShowAlert(true);
+      setAlertMessage('Your availability slots have been saved successfully.');
+      setTimeout(() => {
+        setShowAlert(false);
+        navigate('/doctor/availability');
+      }, 2000);
     } catch (error: unknown) {
-      console.error('Erreur lors de la création des disponibilités:', error);
-      alert('Impossible de créer des créneaux de disponibilité. Veuillez réessayer.');
+      // More detailed error logging
+      console.error('Error creating availability:', error);
+      
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status: number; data?: unknown; statusText?: string } };
+        console.error('API Error status:', axiosError.response?.status, axiosError.response?.statusText);
+        console.error('API Error details:', axiosError.response?.data);
+        
+        // More detailed error object examination
+        if (axiosError.response?.data) {
+          try {
+            const errorData = axiosError.response.data;
+            console.error('Error data type:', typeof errorData);
+            
+            if (typeof errorData === 'object') {
+              Object.keys(errorData as object).forEach(key => {
+                console.error(`Error field '${key}':`, (errorData as Record<string, unknown>)[key]);
+              });
+            }
+            
+            // If there's a message field, show it in the alert
+            if (typeof errorData === 'object' && 'message' in (errorData as object)) {
+              const errorMessage = (errorData as Record<string, unknown>).message;
+              setAlertMessage(`Error: ${String(errorMessage)}`);
+              return;
+            }
+          } catch (parseError) {
+            console.error('Error parsing error data:', parseError);
+          }
+        }
+      }
+      
+      setShowAlert(true);
+      setAlertMessage('Unable to create availability slots. Please try again.');
+      setTimeout(() => setShowAlert(false), 5000);
     } finally {
       setIsSubmitting(false);
     }
@@ -318,34 +484,47 @@ const CreateAvailability = () => {
 
   return (
     <div className="create-availability-container">
-      <h1 className="page-title">Ajouter des disponibilités</h1>
+      {showAlert && (
+        <div className="alert-container">
+          <div className="alert-message">
+            <FontAwesomeIcon icon={faExclamationCircle} className="alert-icon" />
+            {alertMessage}
+          </div>
+        </div>
+      )}
+      <h1 className="page-title">Add Availability Slots</h1>
       
       <div className="date-selection-container">
-        <h2 className="section-title">1. Sélectionnez une date</h2>
+        <div className="calendar-header">
+          <h2 className="section-title">1. Select a Date</h2>
+          <FontAwesomeIcon icon={faCalendarAlt} className="calendar-icon" />
+        </div>
         
-        <div className="quick-date-buttons">
-          <button 
-            className={`quick-date-button ${isToday(date) ? 'active' : ''}`}
-            onClick={() => quickDateSelect(0)}
-          >
-            Aujourd'hui
-          </button>
-          <button 
-            className={`quick-date-button ${isTomorrow(date) ? 'active' : ''}`}
-            onClick={() => quickDateSelect(1)}
-          >
-            Demain
-          </button>
-          <button 
-            className={`quick-date-button ${!isToday(date) && !isTomorrow(date) && date.getDate() === addDays(new Date(), 2).getDate() ? 'active' : ''}`}
-            onClick={() => quickDateSelect(2)}
-          >
-            Après-demain
-          </button>
+        <div className="days-scroll-container">
+          <div className="days-container">
+            {dayCards.map((dayCard, index) => (
+              <div 
+                key={index} 
+                className={`day-card ${format(date, 'yyyy-MM-dd') === format(dayCard.date, 'yyyy-MM-dd') ? 'active' : ''}`}
+                onClick={() => selectDay(dayCard.date)}
+              >
+                <span className="day-name">{dayCard.dayName}</span>
+                <div className="day-number-circle">
+                  <span className="day-number">{dayCard.dayNumber}</span>
+                </div>
+                <span className="month-text">{dayCard.month}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="selected-date-container">
+          <FontAwesomeIcon icon={faClock} className="selected-date-icon" />
+          <span className="selected-date-text">{formatDateForDisplay(date)}</span>
         </div>
         
         <div className="date-picker-container">
-          <label htmlFor="date-picker">Ou sélectionnez une date spécifique:</label>
+          <label htmlFor="date-picker">Or select a specific date:</label>
           <input 
             type="date" 
             id="date-picker" 
@@ -355,54 +534,112 @@ const CreateAvailability = () => {
             onChange={handleDateChange}
           />
         </div>
-        
-        <div className="selected-date">
-          <span className="date-display">{formatDateForDisplay(date)}</span>
-        </div>
       </div>
       
       <div className="time-slots-container">
         <div className="time-slots-header">
-          <h2 className="section-title">2. Définissez vos créneaux horaires</h2>
+          <h2 className="section-title">2. Set Your Time Slots</h2>
           <button 
             type="button" 
             className="info-button"
             onMouseEnter={() => setShowTip(true)}
             onMouseLeave={() => setShowTip(false)}
           >
-            ?
+            <FontAwesomeIcon icon={faInfoCircle} />
           </button>
           {showTip && (
             <div className="tooltip">
-              <p>Définissez les heures auxquelles vous êtes disponible pour des consultations.</p>
-              <p>Vous pouvez ajouter plusieurs créneaux pour la même journée.</p>
-              <p>Les créneaux ne peuvent pas se chevaucher et doivent être d'au moins 30 minutes.</p>
+              <div className="tooltip-title">Availability Information</div>
+              <div className="tooltip-item">
+                <div className="bullet-point"></div>
+                <p>Define the hours when you are available for consultations.</p>
+              </div>
+              <div className="tooltip-item">
+                <div className="bullet-point"></div>
+                <p>You can add multiple time slots for the same day.</p>
+              </div>
+              <div className="tooltip-item">
+                <div className="bullet-point"></div>
+                <p>Time slots must be at least 30 minutes long and cannot overlap.</p>
+              </div>
             </div>
           )}
         </div>
         
         {slots.map((slot, index) => (
           <div key={slot.id} className="time-slot">
+            <div className="slot-header">
+              <span className="slot-header-text">Time Slot {index + 1}</span>
+            </div>
             <div className="time-inputs">
               <div className="time-input-group">
-                <label>Début:</label>
-                <input 
-                  type="time" 
-                  value={slot.startTime}
-                  onChange={(e) => handleTimeChange(e, index, true)}
-                  className="time-input"
-                  step="1800" // 30 minutes
-                />
+                <label>Start:</label>
+                <div className="time-selectors-wrapper">
+                  <div className="custom-time-selector">
+                    <select 
+                      className="hour-select"
+                      value={slot.startTime.split(':')[0]}
+                      onChange={(e) => {
+                        const hour = e.target.value;
+                        const minute = slot.startTime.split(':')[1];
+                        handleTimeChange({ target: { value: `${hour}:${minute}` } } as React.ChangeEvent<HTMLInputElement>, index, true);
+                      }}
+                    >
+                      {Array.from({ length: 24 }, (_, i) => i).map(hour => (
+                        <option key={hour} value={hour.toString().padStart(2, '0')}>
+                          {hour.toString().padStart(2, '0')}
+                        </option>
+                      ))}
+                    </select>
+                    <select 
+                      className="minute-select"
+                      value={slot.startTime.split(':')[1]}
+                      onChange={(e) => {
+                        const hour = slot.startTime.split(':')[0];
+                        const minute = e.target.value;
+                        handleTimeChange({ target: { value: `${hour}:${minute}` } } as React.ChangeEvent<HTMLInputElement>, index, true);
+                      }}
+                    >
+                      <option value="00">00</option>
+                      <option value="30">30</option>
+                    </select>
+                  </div>
+                </div>
               </div>
+              <FontAwesomeIcon icon={faLongArrowAltRight} className="arrow-icon" />
               <div className="time-input-group">
-                <label>Fin:</label>
-                <input 
-                  type="time" 
-                  value={slot.endTime}
-                  onChange={(e) => handleTimeChange(e, index, false)}
-                  className="time-input"
-                  step="1800" // 30 minutes
-                />
+                <label>End:</label>
+                <div className="time-selectors-wrapper">
+                  <div className="custom-time-selector">
+                    <select 
+                      className="hour-select"
+                      value={slot.endTime.split(':')[0]}
+                      onChange={(e) => {
+                        const hour = e.target.value;
+                        const minute = slot.endTime.split(':')[1];
+                        handleTimeChange({ target: { value: `${hour}:${minute}` } } as React.ChangeEvent<HTMLInputElement>, index, false);
+                      }}
+                    >
+                      {Array.from({ length: 24 }, (_, i) => i).map(hour => (
+                        <option key={hour} value={hour.toString().padStart(2, '0')}>
+                          {hour.toString().padStart(2, '0')}
+                        </option>
+                      ))}
+                    </select>
+                    <select 
+                      className="minute-select"
+                      value={slot.endTime.split(':')[1]}
+                      onChange={(e) => {
+                        const hour = slot.endTime.split(':')[0];
+                        const minute = e.target.value;
+                        handleTimeChange({ target: { value: `${hour}:${minute}` } } as React.ChangeEvent<HTMLInputElement>, index, false);
+                      }}
+                    >
+                      <option value="00">00</option>
+                      <option value="30">30</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
             <button 
@@ -411,7 +648,7 @@ const CreateAvailability = () => {
               onClick={() => removeSlot(index)}
               disabled={slots.length === 1}
             >
-              ×
+              <FontAwesomeIcon icon={faTimes} />
             </button>
           </div>
         ))}
@@ -421,7 +658,7 @@ const CreateAvailability = () => {
           className="add-slot-button"
           onClick={addSlot}
         >
-          + Ajouter un créneau
+          <FontAwesomeIcon icon={faPlus} /> Add Time Slot
         </button>
       </div>
       
@@ -431,7 +668,7 @@ const CreateAvailability = () => {
           className="cancel-button"
           onClick={() => navigate('/doctor/availability')}
         >
-          Annuler
+          Cancel
         </button>
         <button 
           type="button" 
@@ -439,7 +676,17 @@ const CreateAvailability = () => {
           onClick={saveAvailabilities}
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Enregistrement...' : 'Enregistrer les disponibilités'}
+          {isSubmitting ? (
+            <>
+              <div className="spinner"></div>
+              Saving...
+            </>
+          ) : (
+            <>
+              <FontAwesomeIcon icon={faSave} className="save-icon" />
+              Save Availability
+            </>
+          )}
         </button>
       </div>
     </div>

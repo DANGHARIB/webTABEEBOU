@@ -233,7 +233,11 @@ exports.getDoctorAppointments = async (req, res) => {
       .populate('availability')
       .sort({ createdAt: -1 });
     
-    res.json(appointments);
+    res.json({
+      success: true,
+      data: appointments,
+      message: "Appointments fetched successfully."
+    });
   } catch (error) {
     logger.error(`Erreur lors de la récupération des rendez-vous du médecin: ${error.message}`);
     res.status(500).json({ message: error.message });

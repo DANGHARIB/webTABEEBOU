@@ -12,12 +12,24 @@ import PatientLayout from './pages/patient/PatientLayout';
 import DoctorLayout from './pages/doctor/DoctorLayout';
 
 // Pages d'authentification médecin
-import DoctorLoginScreen from './pages/doctor/auth/Login.tsx';
-import DoctorSignupScreen from './pages/doctor/auth/Signup.tsx';
-import DoctorDetailsScreen from './pages/doctor/auth/Details.tsx';
-import DoctorAuthIndexScreen from './pages/doctor/auth/Index.tsx';
-import DoctorUnderReviewScreen from './pages/doctor/auth/UnderReview.tsx';
-import WelcomeDoctorScreen from './pages/doctor/auth/Welcome.tsx';
+import DoctorLoginScreen from './pages/doctor/auth/Login';
+import DoctorSignupScreen from './pages/doctor/auth/Signup';
+import DoctorDetailsScreen from './pages/doctor/auth/Details';
+import DoctorAuthIndexScreen from './pages/doctor/auth/Index';
+import DoctorUnderReviewScreen from './pages/doctor/auth/UnderReview';
+import WelcomeDoctorScreen from './pages/doctor/auth/Welcome';
+
+// Doctor components
+import DoctorAppointment from './pages/doctor/appointments/DoctorAppointment';
+import DoctorPayments from './pages/doctor/payments/DoctorPayments';
+import DoctorPaymentDetails from './pages/doctor/payments/DoctorPaymentDetails';
+import DoctorProfile from './pages/doctor/profile/DoctorProfile';
+import DoctorSearch from './pages/doctor/search/DoctorSearch';
+import DoctorProfileEdit from './pages/doctor/profile/DoctorProfileEdit';
+import AvailabilityList from './pages/doctor/availability/AvailabilityList';
+import CreateAvailability from './pages/doctor/availability/CreateAvailability';
+import CreateNote from './pages/doctor/notes/CreateNote';
+import EditNote from './pages/doctor/notes/EditNote';
 
 // Placeholder pour les pages non encore implémentées
 const PlaceholderPage = ({ title }: { title: string }) => (
@@ -35,33 +47,61 @@ const PatientAppointment = () => <PlaceholderPage title="Rendez-vous Patient" />
 const PatientPayment = () => <PlaceholderPage title="Paiements Patient" />;
 
 const DoctorDashboard = () => <PlaceholderPage title="Tableau de bord Médecin" />;
-const DoctorProfile = () => <PlaceholderPage title="Profil Médecin" />;
-const DoctorAvailability = () => <PlaceholderPage title="Disponibilités" />;
-const DoctorPatient = () => <PlaceholderPage title="Mes Patients" />;
-const DoctorNotes = () => <PlaceholderPage title="Notes Médicales" />;
-const DoctorPayment = () => <PlaceholderPage title="Revenus" />;
 
 // Pages d'authentification patient (placeholders)
 const PatientLogin = () => <PlaceholderPage title="Connexion Patient" />;
 const PatientRegister = () => <PlaceholderPage title="Inscription Patient" />;
 
 // Composant d'authentification requis pour les routes protégées
+
 function RequireAuth({ children, userType }: { children: React.ReactNode, userType?: string }) {
   const { user, loading } = useAuth();
   
-  if (loading) {
-    return <div className="loading">Chargement...</div>;
+  console.log('RequireAuth checking access to:', userType);
+  console.log('localStorage token:', localStorage.getItem('token'));
+  console.log('localStorage userRole:', localStorage.getItem('userRole'));
+  
+  // SIMPLIFIED AUTHENTICATION CHECK
+  // First priority: Check localStorage directly
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('userRole');
+  
+  if (token) {
+    console.log('Found token in localStorage');
+    
+    // If this is a Doctor route and we have Doctor role in localStorage
+    if (userType === 'Doctor' && role === 'Doctor') {
+      console.log('✅ Access granted to Doctor route via localStorage');
+      return <>{children}</>;
+    }
+    
+    // If this is a Patient route and we have Patient role in localStorage
+    if (userType === 'Patient' && role === 'Patient') {
+      console.log('✅ Access granted to Patient route via localStorage');
+      return <>{children}</>;
+    }
+    
+    // Role mismatch - redirect
+    if (userType) {
+      console.log(`❌ Auth error: stored role (${role}) doesn't match required role (${userType})`);
+      return <Navigate to="/" replace />;
+    }
   }
   
-  if (!user) {
-    return <Navigate to="/" replace />;
+  // Second priority: Check context user if localStorage didn't work
+  if (!loading && user) {
+    if (!userType || user.role === userType) {
+      console.log('✅ Access granted via AuthContext');
+      return <>{children}</>;
+    } else {
+      console.log(`❌ Auth error: user role (${user.role}) doesn't match required role (${userType})`);
+      return <Navigate to="/" replace />;
+    }
   }
   
-  if (userType && user.role !== userType) {
-    return <Navigate to="/" replace />;
-  }
-  
-  return <>{children}</>;
+  // Not authenticated or still loading
+  console.log('❌ Access denied: not authenticated');
+  return <Navigate to="/" replace />;
 }
 
 function App() {
@@ -108,10 +148,18 @@ function App() {
             }>
               <Route index element={<DoctorDashboard />} />
               <Route path="profile" element={<DoctorProfile />} />
-              <Route path="availability" element={<DoctorAvailability />} />
-              <Route path="patient" element={<DoctorPatient />} />
-              <Route path="notes" element={<DoctorNotes />} />
-              <Route path="payment" element={<DoctorPayment />} />
+              <Route path="profile/edit" element={<DoctorProfileEdit />} />
+              <Route path="availability" element={<AvailabilityList />} />
+              <Route path="availability/create" element={<CreateAvailability />} />
+              <Route path="search" element={<DoctorSearch />} />
+              <Route path="notes">
+                <Route index element={<DoctorPayments />} /> {/* Placeholder until we have a notes index page */}
+                <Route path="create" element={<CreateNote />} />
+                <Route path=":id" element={<EditNote />} />
+              </Route>
+              <Route path="payments" element={<DoctorPayments />} />
+              <Route path="payments/:paymentId" element={<DoctorPaymentDetails />} />
+              <Route path="appointment" element={<DoctorAppointment />} />
             </Route>
             
             {/* Route 404 */}

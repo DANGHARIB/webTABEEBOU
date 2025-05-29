@@ -1,0 +1,275 @@
+/* DoctorSearch.css */
+.doctor-search {
+  flex: 1;
+  padding: 2rem;
+  background-color: #F8FAFC;
+}
+
+.search-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #090F47;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.25rem 0;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  padding: 0 1rem;
+  margin-bottom: 1.5rem;
+  height: 3rem;
+  border: 1px solid #E5E7EB;
+}
+
+.search-icon {
+  color: #090F47;
+  margin-right: 0.625rem;
+}
+
+.search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  font-size: 1rem;
+  color: #090F47;
+  background: transparent;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+.clear-button {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #090F47;
+  cursor: pointer;
+  padding: 0.375rem;
+}
+
+.patients-container {
+  padding-bottom: 1.5rem;
+}
+
+.patient-card {
+  width: 100%;
+  background-color: #FFFFFF;
+  border-radius: 14px;
+  margin-bottom: 0.875rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.patient-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.patient-card-content {
+  display: flex;
+  padding: 1rem;
+  align-items: center;
+}
+
+.patient-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  margin-right: 1rem;
+  background-color: #F4F4F4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.patient-icon {
+  font-size: 2.5rem;
+  color: #7AA7CC;
+}
+
+.gender-icon {
+  font-size: 1.5rem;
+}
+
+.gender-icon.male {
+  color: #5586CC;
+}
+
+.gender-icon.female {
+  color: #FF6B81;
+}
+
+.gender-icon.neutral {
+  color: #6C757D;
+}
+
+.patient-info {
+  flex: 1;
+  justify-content: center;
+}
+
+.patient-name {
+  font-size: 1.0625rem;
+  font-weight: bold;
+  color: #090F47;
+  margin: 0 0 0.25rem 0;
+}
+
+.patient-details {
+  font-size: 0.875rem;
+  color: #7AA7CC;
+  margin: 0 0 0.3125rem 0;
+}
+
+.assessment-badge {
+  display: flex;
+  align-items: center;
+  background-color: rgba(122, 167, 204, 0.1);
+  border-radius: 12px;
+  padding: 0.1875rem 0.5rem;
+  width: fit-content;
+}
+
+.assessment-icon {
+  font-size: 0.75rem;
+  color: #7AA7CC;
+  margin-right: 0.25rem;
+}
+
+.assessment-text {
+  font-size: 0.75rem;
+  color: #7AA7CC;
+}
+
+.arrow-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+}
+
+.arrow-icon {
+  font-size: 1.25rem;
+  color: #CBD5E1;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 0;
+}
+
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #7AA7CC;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1rem;
+  color: #64748B;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 0;
+}
+
+.error-icon {
+  font-size: 3rem;
+  color: #EF4444;
+  margin-bottom: 1rem;
+}
+
+.error-text {
+  font-size: 1rem;
+  color: #334155;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+.retry-button {
+  background-color: #7AA7CC;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+  background-color: #6999BE;
+}
+
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5rem 0;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: #CBD5E1;
+  margin-bottom: 1rem;
+}
+
+.no-results {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #090F47;
+  margin-bottom: 0.5rem;
+}
+
+.no-results-hint {
+  font-size: 0.875rem;
+  color: #64748B;
+  text-align: center;
+  max-width: 80%;
+}
+
+@media (max-width: 768px) {
+  .doctor-search {
+    padding: 1rem;
+  }
+  
+  .patient-image {
+    width: 50px;
+    height: 50px;
+    margin-right: 0.75rem;
+  }
+  
+  .patient-icon {
+    font-size: 2rem;
+  }
+  
+  .patient-name {
+    font-size: 1rem;
+  }
+}

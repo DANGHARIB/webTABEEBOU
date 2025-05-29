@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 
+// Custom hook for accessing auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   
@@ -9,4 +10,4 @@ export const useAuth = () => {
   }
   
   return context;
-}; 
+};

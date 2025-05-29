@@ -3,8 +3,9 @@
   flex-direction: column;
   padding: 20px;
   background-color: #fff;
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
   position: relative;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .header {
@@ -257,6 +258,7 @@
 
 .time-container {
   display: flex;
+  flex-direction: row;
   align-items: center;
 }
 
@@ -264,6 +266,7 @@
   font-size: 15px;
   font-weight: 500;
   color: #2c3e50;
+  white-space: nowrap;
 }
 
 .today-badge {
