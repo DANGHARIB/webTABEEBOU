@@ -1,0 +1,224 @@
+.add-payment-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #F8FAFC;
+  min-height: calc(100vh - 80px);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.add-payment-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.add-payment-header .header-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #090F47;
+  margin: 0;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #090F47;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 1rem;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.add-payment-content {
+  width: 100%;
+  background-color: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(9, 15, 71, 0.04);
+}
+
+.payment-type-selector {
+  margin-bottom: 2rem;
+}
+
+.payment-type-selector h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #090F47;
+  margin-bottom: 1rem;
+}
+
+.payment-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.type-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1rem;
+  border-radius: 10px;
+  border: 2px solid #E2E8F0;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.type-button svg {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #64748B;
+}
+
+.type-button span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.type-button.active {
+  border-color: #7AA7CC;
+  background-color: rgba(122, 167, 204, 0.05);
+}
+
+.type-button.active svg,
+.type-button.active span {
+  color: #7AA7CC;
+}
+
+.type-button:hover:not(.active) {
+  border-color: #CBD5E1;
+  background-color: #F8FAFC;
+}
+
+.payment-form {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748B;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #0F172A;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #7AA7CC;
+}
+
+.form-group input::placeholder {
+  color: #CBD5E1;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.external-service-message {
+  background-color: #F1F5F9;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.external-service-message p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748B;
+  text-align: center;
+}
+
+.submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background-color: #7AA7CC;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 1rem;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #6999BE;
+}
+
+.submit-button:disabled {
+  background-color: #CBD5E1;
+  cursor: not-allowed;
+}
+
+.spinner-small {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .add-payment-container {
+    padding: 1rem;
+  }
+  
+  .add-payment-content {
+    padding: 1.5rem;
+  }
+  
+  .payment-types {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .form-row .form-group:last-child {
+    grid-column: span 2;
+  }
+}

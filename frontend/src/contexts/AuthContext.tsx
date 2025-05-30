@@ -4,11 +4,12 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
 // Define user types
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
   role: 'Patient' | 'Doctor';
+  hasCompletedAssessment?: boolean;
 }
 
 interface UserRegisterData {
@@ -23,9 +24,10 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password: string, role: string) => Promise<void>;
+  login: (email: string, password: string, role: string) => Promise<User | null>;
   register: (userData: UserRegisterData, role: string) => Promise<void>;
   logout: () => void;
+  setAuthenticatedUserManually: (token: string, userDataFromToken: User, userRole: 'Patient' | 'Doctor') => void;
 }
 
 // Create context with default undefined value
@@ -64,7 +66,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, role: string) => {
+  const login = async (email: string, password: string, role: string): Promise<User | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -86,16 +88,40 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           localStorage.setItem('userInfo', JSON.stringify(response.data.user));
         }
         
-        const decodedUser = jwtDecode<User>(token);
-        setUser(decodedUser);
+        const apiUser = response.data; // User details are directly in response.data (e.g., _id, fullName, email, role, hasCompletedAssessment)
+        const decodedFromToken = jwtDecode<{ id: string, iat?: number, exp?: number }>(token); // JWT typically only has id, iat, exp
+
+        const userObject: User = {
+          id: apiUser._id || decodedFromToken.id, // Prefer _id from response, fallback to token's id
+          email: apiUser.email,
+          name: apiUser.fullName, // Map fullName to name
+          role: apiUser.role,
+        };
+
+        // Add hasCompletedAssessment only if it's present in the API response
+        if (apiUser.hasCompletedAssessment !== undefined) {
+          userObject.hasCompletedAssessment = apiUser.hasCompletedAssessment;
+        }
+        // Add other optional fields from User interface if they exist in apiUser similarly
+
+        // No need to filter undefined properties if we construct it carefully like above.
+        // The User interface itself defines what's optional.
+
+        localStorage.setItem('userInfo', JSON.stringify(userObject));
+        const userToSetAndReturn = userObject; // Assign to const
+
+        setUser(userToSetAndReturn);
         
         // Configure axios with token
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        console.log('Connexion réussie, token stocké');
+        console.log('Connexion réussie, token stocké, user object:', userToSetAndReturn);
+        return userToSetAndReturn;
       }
+      return null;
     } catch (error) {
       setError('Identifiants incorrects. Veuillez réessayer.');
       console.error('Erreur de connexion:', error);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -136,6 +162,17 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const setAuthenticatedUserManually = (token: string, userDataFromToken: User, userRole: 'Patient' | 'Doctor') => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('userRole', userRole);
+    // Assuming userDataFromToken is the decoded payload. If actual user object is different, adjust accordingly.
+    localStorage.setItem('userInfo', JSON.stringify(userDataFromToken)); 
+    setUser(userDataFromToken);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setLoading(false); // Ensure loading is set to false
+    console.log('Utilisateur authentifié manuellement, token stocké');
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userInfo');
@@ -146,7 +183,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, register, logout, setAuthenticatedUserManually }}>
       {children}
     </AuthContext.Provider>
   );

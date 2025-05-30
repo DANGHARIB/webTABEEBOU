@@ -1,0 +1,33 @@
+/* Inherits styles from Login.css and Register.css via shared class names */
+
+.verified-card {
+    /* Uses .login-card styles */
+    padding-top: 2rem;
+    text-align: center;
+}
+
+.verified-icon {
+    font-size: 4rem; /* Large icon */
+    color: #28a745; /* Green color for success */
+    margin-bottom: 1rem;
+}
+
+.verified-card h2 {
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+}
+
+.verified-card .subtitle {
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+.verified-card .message {
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.continue-button {
+    /* Uses .login-button styles */
+    width: 100%;
+}

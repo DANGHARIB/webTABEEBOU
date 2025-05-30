@@ -1,37 +1,29 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { useNotification } from '../../hooks/useNotification';
+import { Outlet, NavLink } from 'react-router-dom';
+
+
 import './PatientLayout.css';
 
 function PatientLayout() {
-  const { logout } = useAuth();
-  const { addNotification } = useNotification();
-  const navigate = useNavigate();
-  
-  const handleLogout = () => {
-    logout();
-    addNotification('Vous avez été déconnecté avec succès', 'success');
-    navigate('/');
-  };
+  // Logout functionality has been removed from this component's sidebar.
+  // If needed elsewhere, it should be re-implemented there.
 
   return (
     <div className="layout-container">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h2>MediConsult</h2>
-          <p>Espace Patient</p>
+          <h2>Tabeebou.com</h2>
+          <p>Patient Area</p>
         </div>
         
         <nav className="sidebar-nav">
           <ul>
             <li>
               <NavLink 
-                to="/patient" 
+                to="/patient/profile" 
                 className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
-                end
               >
-                <span className="nav-icon">📊</span>
-                <span>Tableau de bord</span>
+                <span className="nav-icon">👤</span>
+                <span>Profile</span>
               </NavLink>
             </li>
             <li>
@@ -40,7 +32,7 @@ function PatientLayout() {
                 className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
               >
                 <span className="nav-icon">📅</span>
-                <span>Rendez-vous</span>
+                <span>Appointments</span>
               </NavLink>
             </li>
             <li>
@@ -49,7 +41,7 @@ function PatientLayout() {
                 className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
               >
                 <span className="nav-icon">👨‍⚕️</span>
-                <span>Médecins</span>
+                <span>Doctors</span>
               </NavLink>
             </li>
             <li>
@@ -58,23 +50,17 @@ function PatientLayout() {
                 className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
               >
                 <span className="nav-icon">💳</span>
-                <span>Paiements</span>
+                <span>Payments</span>
               </NavLink>
             </li>
             <li>
               <NavLink 
-                to="/patient/profile" 
+                to="/patient/search" 
                 className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
               >
-                <span className="nav-icon">👤</span>
-                <span>Profil</span>
+                <span className="nav-icon">🔍</span>
+                <span>Search</span>
               </NavLink>
-            </li>
-            <li className="logout-item">
-              <button className="nav-link logout-btn" onClick={handleLogout}>
-                <span className="nav-icon">🚪</span>
-                <span>Déconnexion</span>
-              </button>
             </li>
           </ul>
         </nav>
@@ -82,8 +68,8 @@ function PatientLayout() {
       
       <main className="main-content">
         <header className="content-header">
-          <h2>Dashboard Patient</h2>
-          {/* Vous pouvez ajouter des éléments d'en-tête comme des notifications ou un menu utilisateur ici */}
+          <h2>Patient Area</h2>
+          {/* You can add header elements like notifications or a user menu here */}
         </header>
         
         <div className="content-body">

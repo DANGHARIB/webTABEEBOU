@@ -1,0 +1,94 @@
+/* Inherits styles from Login.css and Register.css via shared class names */
+
+.otp-card {
+    /* Uses .login-card styles */
+    padding-top: 2rem;
+    text-align: center;
+}
+
+.otp-card .subtitle {
+    margin-bottom: 1.5rem;
+    color: #555;
+}
+
+.otp-input-group {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem; /* Space between OTP input boxes */
+    margin-bottom: 1.5rem;
+}
+
+.otp-input {
+    width: 3rem; /* Adjust size as needed */
+    height: 3.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    caret-color: #007bff; /* Cursor color */
+}
+
+.otp-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    outline: none;
+}
+
+.submit-button {
+    /* Uses .login-button styles */
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.timer-resend-section {
+    margin-top: 1.5rem;
+    color: #555;
+}
+
+.timer-text {
+    margin-bottom: 0.5rem;
+}
+
+.resend-button {
+    background: none;
+    border: none;
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.resend-button:disabled {
+    color: #6c757d;
+    text-decoration: none;
+    cursor: not-allowed;
+}
+
+.error-message {
+    /* Uses .error-message styles from Login.css */
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+}

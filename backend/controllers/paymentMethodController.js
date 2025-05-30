@@ -239,20 +239,36 @@ exports.deletePaymentMethod = async (req, res) => {
     const paymentMethodId = req.params.id;
     logger.info(`Suppression de la méthode de paiement ${paymentMethodId} pour l'utilisateur ${req.user._id}`);
 
-    // Find the patient
-    const patient = await Patient.findOne({ user: req.user._id });
+    // Validate the payment method ID
+    if (!paymentMethodId || typeof paymentMethodId !== 'string') {
+      logger.warn(`ID de méthode de paiement invalide: ${paymentMethodId}`);
+      return res.status(400).json({ message: 'ID de méthode de paiement invalide' });
+    }
 
-    if (!patient) {
-      logger.warn(`Profil patient non trouvé pour l'utilisateur ${req.user._id}`);
-      return res.status(404).json({ message: 'Profil patient non trouvé' });
+    // Find the patient
+    let patient;
+    try {
+      patient = await Patient.findOne({ user: req.user._id });
+      if (!patient) {
+        logger.warn(`Profil patient non trouvé pour l'utilisateur ${req.user._id}`);
+        return res.status(404).json({ message: 'Profil patient non trouvé' });
+      }
+    } catch (patientError) {
+      logger.error(`Erreur lors de la recherche du patient: ${patientError.message}`);
+      return res.status(500).json({ message: 'Erreur lors de la recherche du patient' });
     }
 
     // Find the payment method
-    const paymentMethod = await PaymentMethod.findById(paymentMethodId);
-
-    if (!paymentMethod) {
-      logger.warn(`Méthode de paiement ${paymentMethodId} non trouvée`);
-      return res.status(404).json({ message: 'Méthode de paiement non trouvée' });
+    let paymentMethod;
+    try {
+      paymentMethod = await PaymentMethod.findById(paymentMethodId);
+      if (!paymentMethod) {
+        logger.warn(`Méthode de paiement ${paymentMethodId} non trouvée`);
+        return res.status(404).json({ message: 'Méthode de paiement non trouvée' });
+      }
+    } catch (findError) {
+      logger.error(`Erreur lors de la recherche de la méthode de paiement: ${findError.message}`);
+      return res.status(500).json({ message: 'Erreur lors de la recherche de la méthode de paiement' });
     }
 
     // Verify ownership
@@ -263,25 +279,48 @@ exports.deletePaymentMethod = async (req, res) => {
 
     // Check if it's the default payment method
     if (paymentMethod.isDefault) {
-      // Find another payment method to set as default
-      const otherPaymentMethod = await PaymentMethod.findOne({
-        patient: patient._id,
-        _id: { $ne: paymentMethodId }
-      });
+      try {
+        // Find another payment method to set as default
+        const otherPaymentMethod = await PaymentMethod.findOne({
+          patient: patient._id,
+          _id: { $ne: paymentMethodId }
+        });
 
-      if (otherPaymentMethod) {
-        otherPaymentMethod.isDefault = true;
-        await otherPaymentMethod.save();
+        if (otherPaymentMethod) {
+          otherPaymentMethod.isDefault = true;
+          await otherPaymentMethod.save();
+          logger.info(`Nouvelle méthode de paiement par défaut définie: ${otherPaymentMethod._id}`);
+        }
+      } catch (defaultError) {
+        logger.error(`Erreur lors de la mise à jour de la méthode de paiement par défaut: ${defaultError.message}`);
+        // Continue with deletion even if setting a new default fails
       }
     }
 
-    // Delete the payment method
-    await paymentMethod.deleteOne();
-
-    logger.info(`Méthode de paiement ${paymentMethodId} supprimée pour l'utilisateur ${req.user._id}`);
-    res.json({ message: 'Méthode de paiement supprimée' });
+    // Delete the payment method using multiple approaches to ensure success
+    try {
+      // Try multiple deletion approaches in case one fails
+      try {
+        // Method 1: Use deleteOne on the model
+        await PaymentMethod.deleteOne({ _id: paymentMethodId });
+        logger.info(`Méthode 1 de suppression réussie pour ${paymentMethodId}`);
+      } catch (deleteError1) {
+        logger.error(`Erreur méthode 1 de suppression: ${deleteError1.message}`);
+        
+        // Method 2: Use findByIdAndDelete
+        await PaymentMethod.findByIdAndDelete(paymentMethodId);
+        logger.info(`Méthode 2 de suppression réussie pour ${paymentMethodId}`);
+      }
+      
+      logger.info(`Méthode de paiement ${paymentMethodId} supprimée pour l'utilisateur ${req.user._id}`);
+      return res.json({ message: 'Méthode de paiement supprimée' });
+    } catch (deleteError) {
+      logger.error(`Erreur lors de la suppression de la méthode de paiement: ${deleteError.message}`);
+      return res.status(500).json({ message: 'Erreur lors de la suppression de la méthode de paiement' });
+    }
   } catch (error) {
-    logger.error(`Erreur lors de la suppression de la méthode de paiement: ${error.message}`);
-    res.status(500).json({ message: error.message });
+    logger.error(`Erreur générale lors de la suppression de la méthode de paiement: ${error.message}`);
+    logger.error(`Stack trace: ${error.stack}`);
+    return res.status(500).json({ message: 'Erreur serveur lors de la suppression de la méthode de paiement' });
   }
 }; 

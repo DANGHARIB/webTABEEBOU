@@ -257,19 +257,6 @@ export const doctorAPI = {
       throw error;
     }
   },
-
-  // Vérifier si une note existe pour un rendez-vous
-  checkNoteExists: async (appointmentId: string): Promise<{exists: boolean; noteId?: string}> => {
-    try {
-      console.log('Checking if note exists for appointment:', appointmentId);
-      const response = await api.get(`/appointment-notes/check/${appointmentId}`);
-      console.log('Check note exists response:', response.data);
-      return response.data;
-    } catch (err) {
-      console.error('Error checking if note exists:', err);
-      return { exists: false };
-    }
-  },
   
   // Mettre à jour le profil du médecin
   updateProfile: async (profileData: ProfileData): Promise<ApiResponse<Doctor>> => {
@@ -314,6 +301,141 @@ export const patientAPI = {
   searchDoctors: async (searchParams: SearchParams): Promise<ApiResponse<Doctor[]>> => {
     const response = await api.get('/doctors/search', { params: searchParams });
     return response.data;
+  },
+
+  // Get saved payment methods
+  getSavedPaymentMethods: async () => {
+    try {
+      // Ensure token is in localStorage
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No authentication token found in localStorage');
+        throw new Error('Authentication required. Please log in again.');
+      }
+
+      // Using the correct API endpoint path - should be /payment-methods, not /patients/payment-methods
+      const response = await api.get('/payment-methods', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      // Log success and return data
+      console.log('Payment methods retrieved successfully:', response.data);
+      // The API is directly returning the array rather than a {data: [...]} structure
+      // Return the array directly if it exists, otherwise an empty array
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+      // If we hit a 403, provide a more specific error
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        throw new Error('You do not have permission to access payment methods. Your session may have expired.');
+      }
+      // Rethrow to allow component to handle
+      throw error;
+    }
+  },
+
+  // Set default payment method
+  setDefaultPaymentMethod: async (methodId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+      
+      const response = await api.put(`/payment-methods/${methodId}/default`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('Payment method set as default:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error setting default payment method:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        throw new Error('You do not have permission to update payment methods. Your session may have expired.');
+      }
+      throw error;
+    }
+  },
+
+  // Delete a payment method
+  deletePaymentMethod: async (methodId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const response = await api.delete(`/payment-methods/${methodId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('Payment method deleted:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting payment method:', error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 403) {
+          throw new Error('You do not have permission to delete payment methods. Your session may have expired.');
+        } else if (error.response?.status === 500) {
+          throw new Error('Server error occurred. The payment method could not be deleted.');
+        } else if (error.response?.status === 404) {
+          throw new Error('Payment method not found. It may have been already deleted.');
+        }
+      }
+      throw new Error('Failed to delete payment method. Please try again later.');
+    }
+  },
+
+  // Add a new payment method
+  addPaymentMethod: async (paymentData: { name: string; type: string; cardDetails?: { number: string; expiryMonth: string; expiryYear: string; cvc: string } }) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+      
+      const response = await api.post('/payment-methods', paymentData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('Payment method added:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding payment method:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        throw new Error('You do not have permission to add payment methods. Your session may have expired.');
+      }
+      throw error;
+    }
+  },
+  
+  // Get saved/favorite doctors
+  getSavedDoctors: async (): Promise<Doctor[]> => {
+    try {
+      const response = await api.get('/patients/saved-doctors');
+      console.log('Saved doctors retrieved:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching saved doctors:', error);
+      throw error;
+    }
+  },
+  
+  // Get recommended doctors
+  getRecommendedDoctors: async (): Promise<Doctor[]> => {
+    try {
+      const response = await api.get('/patients/recommended-doctors');
+      console.log('Recommended doctors retrieved:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching recommended doctors:', error);
+      throw error;
+    }
   },
 };
 

@@ -1,0 +1,94 @@
+/* Details.css */
+
+.details-container {
+    /* Inherits from .login-container in Login.css or main styles */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f7fa; /* Or your app's background */
+    padding: 20px;
+  }
+  
+  .details-card {
+    /* Inherits from .login-card in Login.css or main styles */
+    background: white;
+    padding: 2.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px; /* Slightly wider for more content */
+    text-align: center;
+  }
+  
+  .details-card h2 {
+    font-size: 2rem; /* Adjust as needed */
+    color: #090F47; /* Theme color */
+    margin-bottom: 1rem;
+  }
+  
+  .subtitle {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  
+  .email-info {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 2rem;
+    padding: 10px;
+    background-color: #e9f5ff; /* Light blue background */
+    border-left: 4px solid #7AA7CC; /* Theme color accent */
+    border-radius: 4px;
+  }
+  
+  .details-card p {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  
+  /* Re-using login-button style for consistency */
+  .login-button {
+    background-color: #7AA7CC;
+    color: white !important; /* Ensure text is white */
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-block; /* For Link component */
+    text-align: center;
+    transition: all 0.3s ease;
+    min-height: 54px;
+  }
+  
+  .login-button:hover {
+    background-color: #6a96bb;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(122, 167, 204, 0.4);
+  }
+  
+  /* Re-using back-button style for consistency */
+  .back-button {
+    background: none;
+    border: none;
+    font-size: 1rem; /* Adjusted size */
+    color: #090F47 !important; /* Ensure color */
+    padding: 0.5rem;
+    cursor: pointer;
+    display: inline-flex; /* For Link component */
+    align-items: center;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    text-decoration: none; /* Remove underline from Link */
+  }
+  
+  .back-button:hover {
+    color: #7AA7CC !important; /* Ensure hover color */
+  }
+  

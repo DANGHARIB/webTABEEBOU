@@ -1,0 +1,65 @@
+/* Inherits styles from Login.css and Register.css via shared class names like .login-container, .login-card */
+
+.additional-details-card {
+    /* Specific styles if needed, otherwise relies on .login-card */
+    padding-top: 2rem;
+}
+
+.additional-details-card .subtitle {
+    margin-bottom: 1.5rem;
+}
+
+.additional-details-card .form-group {
+    margin-bottom: 1.25rem; /* Adjust spacing as needed */
+}
+
+.additional-details-card label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.additional-details-card .form-input {
+    /* Styles from Login.css are generally good */
+    /* Ensure select dropdowns look consistent */
+    padding: 0.75rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #fff;
+}
+
+.additional-details-card .date-select-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.additional-details-card .date-select {
+    flex: 1;
+}
+
+.additional-details-card .submit-button {
+    /* Uses .login-button styles */
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+.error-message {
+    /* Uses .error-message styles from Login.css */
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+}

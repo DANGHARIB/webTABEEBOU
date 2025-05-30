@@ -23,7 +23,7 @@ function HomePage() {
             </p>
             
             <div className="button-section">
-              <Link to="/patient/auth/login" className="user-button patient-button">
+              <Link to="/patient/auth" className="user-button patient-button">
                 I am a Patient
               </Link>
               <Link to="/doctor/auth" className="user-button doctor-button">

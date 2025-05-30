@@ -1,0 +1,292 @@
+.doctor-list-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #090F47;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #6B7280;
+  margin-bottom: 8px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.section-container {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #090F47;
+  margin-bottom: 16px;
+  padding-left: 4px;
+}
+
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.doctor-card {
+  display: flex;
+  flex-direction: column;
+  background-color: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  padding: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.doctor-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #F4F4F4;
+  margin-bottom: 12px;
+  align-self: center;
+}
+
+.doctor-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #7AA7CC;
+  color: white;
+  font-size: 24px;
+}
+
+.doctor-info {
+  flex: 1;
+  margin-bottom: 16px;
+}
+
+.doctor-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #090F47;
+  margin-bottom: 4px;
+}
+
+.specialization {
+  font-size: 14px;
+  color: #7AA7CC;
+  margin-bottom: 8px;
+}
+
+.rating-container {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.rating-star {
+  color: #FFD700;
+  margin-right: 2px;
+}
+
+.doctor-experience {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 8px;
+}
+
+.price-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.price-icon {
+  color: #7AA7CC;
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+.price-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #7AA7CC;
+}
+
+.explore-button {
+  background-color: #7AA7CC;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-decoration: none;
+  text-align: center;
+}
+
+.explore-button:hover {
+  background-color: #6990B3;
+}
+
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+
+.pulse-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pulse-bubble {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #7AA7CC;
+}
+
+.pulse-bubble-1 {
+  animation: pulse 0.6s ease 0s infinite alternate;
+}
+
+.pulse-bubble-2 {
+  animation: pulse 0.6s ease 0.15s infinite alternate;
+}
+
+.pulse-bubble-3 {
+  animation: pulse 0.6s ease 0.3s infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+}
+
+.error-icon {
+  color: #EF4444;
+  margin-bottom: 12px;
+}
+
+.error-text {
+  font-size: 16px;
+  color: #333333;
+  margin-bottom: 20px;
+}
+
+.retry-button {
+  background-color: #7AA7CC;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFFFF;
+  border-radius: 14px;
+  padding: 30px;
+  margin-top: 10px;
+  border: 1px solid #E5E7EB;
+  text-align: center;
+}
+
+.empty-icon {
+  color: #6B7280;
+  margin-bottom: 12px;
+}
+
+.no-results {
+  font-size: 18px;
+  font-weight: 600;
+  color: #090F47;
+  margin-bottom: 8px;
+}
+
+.no-results-hint {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .doctor-card {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .doctor-image {
+    margin-right: 16px;
+    margin-bottom: 0;
+  }
+  
+  .doctor-info {
+    margin-left: 16px;
+    margin-bottom: 0;
+  }
+  
+  .explore-button {
+    margin-left: auto;
+    width: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .doctors-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .explore-button {
+    width: 100%;
+  }
+}

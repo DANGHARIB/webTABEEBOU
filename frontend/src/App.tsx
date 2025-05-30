@@ -40,17 +40,27 @@ const PlaceholderPage = ({ title }: { title: string }) => (
 );
 
 // Pages de base
-const PatientDashboard = () => <PlaceholderPage title="Tableau de bord Patient" />;
-const PatientProfile = () => <PlaceholderPage title="Profil Patient" />;
-const PatientDoctor = () => <PlaceholderPage title="Recherche de Médecins" />;
+import PatientProfile from './pages/patient/profile/PatientProfile';
+import EditPatientProfile from './pages/patient/profile/EditPatientProfile';
+import PaymentMethods from './pages/patient/profile/PaymentMethods';
+import AddPaymentMethod from './pages/patient/profile/AddPaymentMethod';
+import PatientDoctor from './pages/patient/doctor';
+const PatientSearch = () => <PlaceholderPage title="Search" />;
 const PatientAppointment = () => <PlaceholderPage title="Rendez-vous Patient" />;
 const PatientPayment = () => <PlaceholderPage title="Paiements Patient" />;
 
 const DoctorDashboard = () => <PlaceholderPage title="Tableau de bord Médecin" />;
 
-// Pages d'authentification patient (placeholders)
-const PatientLogin = () => <PlaceholderPage title="Connexion Patient" />;
-const PatientRegister = () => <PlaceholderPage title="Inscription Patient" />;
+// Pages d'authentification patient
+import PatientAuthIndexScreen from './pages/patient/auth/Index';
+import PatientLogin from './pages/patient/auth/Login';
+// Create a placeholder for patient auth details page
+const PatientAuthDetails = () => <PlaceholderPage title="Patient Details" />;
+import PatientRegister from './pages/patient/auth/Register';
+import PatientAdditionalDetails from './pages/patient/auth/PatientAdditionalDetails';
+import VerifyOtp from './pages/patient/auth/VerifyOtp';
+import AccountVerified from './pages/patient/auth/AccountVerified';
+import PatientAssessment from './pages/patient/auth/PatientAssessment';
 
 // Composant d'authentification requis pour les routes protégées
 
@@ -114,8 +124,16 @@ function App() {
             <Route path="/" element={<HomePage />} />
             
             {/* Routes d'authentification patient */}
-            <Route path="/patient/auth/login" element={<PatientLogin />} />
-            <Route path="/patient/auth/register" element={<PatientRegister />} />
+            <Route path="/patient/auth">
+              <Route index element={<PatientAuthIndexScreen />} />
+              <Route path="login" element={<PatientLogin />} />
+              <Route path="register" element={<PatientRegister />} />
+              <Route path="additional-details" element={<PatientAdditionalDetails />} />
+              <Route path="verify-otp" element={<VerifyOtp />} />
+              <Route path="account-verified" element={<AccountVerified />} />
+              <Route path="assessment" element={<PatientAssessment />} />
+              <Route path="details" element={<PatientAuthDetails />} />
+            </Route>
             
             {/* Routes d'authentification médecin */}
             <Route path="/doctor/auth">
@@ -133,11 +151,15 @@ function App() {
                 <PatientLayout />
               </RequireAuth>
             }>
-              <Route index element={<PatientDashboard />} />
+              <Route index element={<PatientProfile />} />
               <Route path="profile" element={<PatientProfile />} />
+              <Route path="profile/edit" element={<EditPatientProfile />} />
+              <Route path="profile/payment-methods" element={<PaymentMethods />} />
+              <Route path="profile/add-payment-method" element={<AddPaymentMethod />} />
               <Route path="doctor" element={<PatientDoctor />} />
               <Route path="appointment" element={<PatientAppointment />} />
               <Route path="payment" element={<PatientPayment />} />
+              <Route path="search" element={<PatientSearch />} />
             </Route>
             
             {/* Routes Médecin */}
